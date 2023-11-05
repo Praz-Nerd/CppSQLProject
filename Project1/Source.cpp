@@ -1,8 +1,16 @@
-#include <iostream>
-using namespace std;
+#include "statementInput.h"
 
 int main() {
-	cout << "Test code, hello Fyps :)\n";
-	cout << "O sa fac alt proiect in the same repo si acela va fi cel pe care lucram\n";
+	Interpreter interpreter;
+	string s;
+	while (s != "0")
+	{
+		cout << "\nCommand (or 0 to exit)> ";
+		getline(cin, s);
+		interpreter.setStatement(s);
+		if(interpreter.commandParser())
+			cout << interpreter.getStatement() << endl;
+	}
+	cout << "\nProgram exited...";
 	return 0;
 }
