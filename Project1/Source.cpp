@@ -8,7 +8,7 @@ using namespace std;
 
 //define regex patterns here
 const string regexStatements::displayStatement = "(DISPLAY) (TABLE) [a-z]+;";
-
+const string regexStatements::dropStatement = "(DROP) (TABLE) [a-z]+;";
 
 int main() {
 	Interpreter interpreter;
