@@ -2,7 +2,13 @@
 #include <string>
 #include "statementInput.h"
 #include "Parser.h"
+#include "Regex.h"
 using namespace std;
+
+
+//define regex patterns here
+const string regexStatements::displayStatement = "(DISPLAY) (TABLE) [a-z]+;";
+
 
 int main() {
 	Interpreter interpreter;

@@ -1,6 +1,8 @@
 #pragma once
 #include <iostream>
+#include <regex>
 #include <string>
+#include "Regex.h"
 using namespace std;
 //a static class with functions for checking and extracting data from a SQL statement
 class Parser {
@@ -23,7 +25,7 @@ public:
 					commandType.push_back(statement[i]);
 
 				//function calls for each type of command go here
-				if (i == commandType.length()) {
+				if (i == statement.length()) {
 					err = "Invalid command type";
 					throw(err);
 				}
@@ -35,6 +37,9 @@ public:
 				}
 				else if (commandType == "DISPLAY") {
 					//display parser
+					if (regex_match(statement, regex(regexStatements::displayStatement, std::regex_constants::icase))) {
+						cout << "cool\n";
+					}
 				}
 				else if (commandType == "INSERT") {
 					//insert parser
