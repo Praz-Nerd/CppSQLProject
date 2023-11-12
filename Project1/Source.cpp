@@ -1,4 +1,8 @@
+#include <iostream>
+#include <string>
 #include "statementInput.h"
+#include "Parser.h"
+using namespace std;
 
 int main() {
 	Interpreter interpreter;
@@ -8,7 +12,7 @@ int main() {
 		cout << "\nCommand (or 0 to exit)> ";
 		getline(cin, s);
 		interpreter.setStatement(s);
-		if(interpreter.commandParser())
+		if(Parser::commandParser(interpreter.getStatement()))
 			cout << interpreter.getStatement() << endl;
 	}
 	cout << "\nProgram exited...";
