@@ -3,7 +3,6 @@
 #include <string>
 using namespace std;
 
-
 //a class which retains one SQL statement at a time
 class Interpreter {
 	//supported commands: CREATE/DROP TABLE/INDEX, DISPLAY TABLE
