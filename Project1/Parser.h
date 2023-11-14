@@ -7,6 +7,7 @@ using namespace std;
 //a static class with functions for checking and extracting data from a SQL statement
 class Parser {
 public:
+	//function for recognizing commands at a superficial level
 	static int commandParser(string statement)
 	{
 		string err = "";

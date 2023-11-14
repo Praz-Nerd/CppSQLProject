@@ -3,7 +3,7 @@
 #include <string>
 using namespace std;
 
-//a class which represents a column from a table
+//a class which represents a column definition from a table (data is stored using Records)
 class Column {
 	string name;
 	string type;//integer, text, numeric
@@ -23,6 +23,7 @@ class Record {
 	string* values;
 	int numValues;
 public:
+	//constructor
 	Record(string* values, int numValues) {
 		this->numValues = numValues;
 		if (values) {
@@ -33,6 +34,7 @@ public:
 		else
 			this->values = nullptr;
 	}
+	//copy constructor
 	Record(const Record& r) {
 		this->numValues = r.numValues;
 		if (r.values) {
@@ -43,11 +45,13 @@ public:
 		else
 			this->values = nullptr;
 	}
+	//destructor
 	~Record() {
 		if (this->values)
 			delete[] this->values;
 		this->values = nullptr;
 	}
+	//function for displaying a record
 	void displayRecord() {
 		for (int i = 0; i < numValues; i++) {
 			cout << endl << "Value on column " << i + 1 << " : " << values[i];

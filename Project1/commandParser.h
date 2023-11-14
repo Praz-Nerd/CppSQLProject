@@ -16,9 +16,10 @@ class commandParser {
         return k;
     }
 public:
+    //functions for individually parsing a command
     static int displayParser(string& command) {
         string tableName = "";
-        for (int i = command.find_last_of(' ') + 1; i < command.length() - 1; i++)
+        for (int i = command.find_last_of(' ') + 1; i < command.length(); i++)
             tableName.push_back(command[i]);
 
         cout << "Table to display: " << tableName << endl;
@@ -26,7 +27,7 @@ public:
     }
     static int dropParser(string& command) {
         string tableName = "";
-        for (int i = command.find_last_of(' ') + 1; i < command.length() - 1; i++)
+        for (int i = command.find_last_of(' ') + 1; i < command.length(); i++)
             tableName.push_back(command[i]);
 
         cout << "Table to drop: " << tableName << endl;
