@@ -25,6 +25,7 @@ public:
         cout << "Table to display: " << tableName << endl;
         return 1;
     }
+
     static int dropParser(string& command) {
         string tableName = "";
         for (int i = command.find_last_of(' ') + 1; i < command.length(); i++)
@@ -33,12 +34,13 @@ public:
         cout << "Table to drop: " << tableName << endl;
         return 1;
     }
+
     static int insertParser(string& command, string& err) {
         //length of the paramteres substring from an insert command
         int length = command.find_last_of(')') - command.find_first_of('(') -1;
         string params = command.substr(command.find_first_of('(')+1, length);
 
-        //exctract table name
+        //extract table name
         string tableName;
         for (int i = insertTableLocation; command[i] != ' '; i++)
             tableName.push_back(command[i]);
@@ -63,6 +65,8 @@ public:
         cout << "\nTable: " << tableName;
         Record r(values, currentValue + 1);
         r.displayRecord();
+
+        delete[] values;
         return 1;
     }
 };
