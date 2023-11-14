@@ -131,7 +131,7 @@
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Commands.h" />
+    <ClInclude Include="commandParser.h" />
     <ClInclude Include="Entities.h" />
     <ClInclude Include="Parser.h" />
     <ClInclude Include="Regex.h" />

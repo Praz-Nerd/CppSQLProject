@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 #include "Regex.h"
-#include "Commands.h"
+#include "commandParser.h"
 using namespace std;
 //a static class with functions for checking and extracting data from a SQL statement
 class Parser {
@@ -11,13 +11,6 @@ public:
 	{
 		string err = "";
 		try {
-			if (statement[statement.length() - 1] != ';')
-			{
-				err = "Invalid command terminator";
-				throw (err);
-			}
-			else
-			{
 				int i;
 				string commandType = "";
 
@@ -37,7 +30,7 @@ public:
 					//drop parser
 					cout << "this is a drop command\n";
 					if (regexStatements::checkRegex(statement, regexStatements::dropStatement)) {
-						Commands::drop(statement);
+						commandParser::dropParser(statement);
 					}
 					else {
 						err = "Drop command not properly formatted\nDROP TABLE table_name";
@@ -48,7 +41,7 @@ public:
 					//display parser
 					cout << "this is a display command\n";
 					if (regexStatements::checkRegex(statement, regexStatements::displayStatement)) {
-						Commands::display(statement);
+						commandParser::displayParser(statement);
 					}
 					else {
 						err = "Display command not properly formatted\nDISPLAY TABLE table_name;";
@@ -59,10 +52,11 @@ public:
 					//insert parser
 					cout << "this is an insert command\n";
 					if (regexStatements::checkRegex(statement, regexStatements::insertStatement)) {
-						Commands::insert(statement);
+						if (!commandParser::insertParser(statement, err))
+							throw(err);
 					}
 					else {
-						err = "Insert command not properly formatted\nINSERT INTO table_name VALUES(..., ..., ..., ...)";
+						err = "Insert command not properly formatted\nINSERT INTO table_name VALUES(...,...,...,...)";
 						throw(err);
 					}
 				}
@@ -82,8 +76,6 @@ public:
 					err = "Invalid command type";
 					throw(err);
 				}
-
-			}
 		}
 		catch (string err) {
 			cout << err << endl;

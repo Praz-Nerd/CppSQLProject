@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include "Regex.h";
 using namespace std;
 
 //a class which retains one SQL statement at a time
@@ -11,6 +12,7 @@ class Interpreter {
 public:
 
 	void setStatement(string s) {
+		regexStatements::removeSpaces(s);
 		this->statement = s;
 	}
 	string getStatement(){

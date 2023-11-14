@@ -22,4 +22,8 @@ public:
             return regex_match(statement, regex(regexPattern));
 
     }
+    //function that removes spaces, by default replaces them with one space
+    static void removeSpaces(string& statement, string replacement = " ") {
+        statement = regex_replace(statement, regex("\\s+"), replacement);
+    }
 };

@@ -32,7 +32,7 @@
     <ClInclude Include="Regex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Commands.h">
+    <ClInclude Include="commandParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
