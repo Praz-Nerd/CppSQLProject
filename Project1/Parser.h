@@ -64,6 +64,18 @@ public:
 				else if (regexStatements::checkRegex(commandType, "(SELECT)")) {
 					//select parser
 					cout << "this is a select command\n";
+					if (regexStatements::checkRegex(statement, regexStatements::selectStatement))
+					{
+						if (!commandParser::selectParser(statement, err))
+							throw(err);
+					}
+					else
+					{
+						err = "Select command not properly formatted\nSELECT (...,...) FROM table_name [WHERE]";
+						throw(err);
+					}
+
+
 				}
 				else if (regexStatements::checkRegex(commandType, "(UPDATE)")) {
 					//update parser
