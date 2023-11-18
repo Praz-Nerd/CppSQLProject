@@ -6,6 +6,7 @@ using namespace std;
 class commandParser {
     //table name in insert command starts here
     const static int insertTableLocation = 12;
+    const static int fromSize = 4;
     //function for counting the number of appearances of a character from a string, to be used only with other commandParser functions
     static int countChars(string s, char c) {
         int k = 0;
@@ -35,8 +36,29 @@ public:
         return 1;
     }
 
+    static int selectParser(string& command, string& err)
+    {
+        //length of the parameters substring from an select command
+        int length = command.find_last_of(')') - command.find_first_of('(') - 1;
+        string params = command.substr(command.find_first_of('(') + 1, length);
+        cout << params << endl;
+       
+
+        int selectTableLocation = command.find("FROM") + fromSize;
+        cout << selectTableLocation << endl;
+
+        string tableName;
+        for (int i = selectTableLocation;(i < command.length()); i++)
+            tableName.push_back(command[i]);
+
+        cout << tableName;
+        return 1;
+
+
+    }
+
     static int insertParser(string& command, string& err) {
-        //length of the paramteres substring from an insert command
+        //length of the parameters substring from an insert command
         int length = command.find_last_of(')') - command.find_first_of('(') -1;
         string params = command.substr(command.find_first_of('(')+1, length);
 

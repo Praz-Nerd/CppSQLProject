@@ -15,7 +15,7 @@ public:
     static const std::string deleteStatement;
 
     //static boolean function for checking regex patterns, case sensitivity is disabled by default
-    static bool checkRegex(string statement, string regexPattern, bool caseSensitive = false) {
+    static bool checkRegex(string statement, string regexPattern, bool caseSensitive = true) {
         if (!caseSensitive)
             return regex_match(statement, regex(regexPattern, std::regex_constants::icase));
         else
