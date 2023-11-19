@@ -12,13 +12,13 @@ const string regexStatements::insertStatement = "(INSERT) (INTO) [_a-zA-Z]+ (VAL
 const string regexStatements::selectStatement = "(SELECT) \\((.*?)\\) (FROM) [_a-zA-Z]+";
 
 int main() {
-    Interpreter interpreter;
     string s;
     while (s != "0")
     {
         cout << "\nCommand (or 0 to exit)> ";
         getline(cin, s);
-        interpreter.setStatement(s);
+        Interpreter interpreter(s);
+        //interpreter.setStatement(s);
         if (Parser::commandParser(interpreter.getStatement())) {
             cout << "Command ran successfully" << endl;
             cout << interpreter.getStatement() << endl;

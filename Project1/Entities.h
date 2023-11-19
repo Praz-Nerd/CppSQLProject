@@ -23,16 +23,72 @@ class Record {
 	string* values;
 	int numValues;
 public:
-	//constructor
+	void setNumValues(int n) {
+		try {
+			string err;
+			if (n < 0) {
+				err = "Invalid number of values";
+				throw(err);
+			}
+			else {
+				this->numValues = n;
+			}
+		}
+		catch (string err) {
+			cout << endl << err << endl;
+		}
+	}
+	int getNumValues() {
+		return this->numValues;
+	}
+
+	void setValues(string* values) {
+		try {
+			string err;
+			if (values == nullptr) {
+				err = "Invalid value array";
+				throw(err);
+			}
+			else {
+				if (this->values)
+					delete[] values;
+				this->values = new string[numValues];
+				for (int i = 0; i < numValues; i++)
+					this->values[i] = values[i];
+			}
+		}
+		catch (string err) {
+			cout << endl << err << endl;
+		}
+	}
+	string* getValues() {
+		string* copy = nullptr;
+		if (this->values == nullptr)
+			return copy;
+		else {
+			copy = new string[numValues];
+			for (int i = 0; i < numValues; i++)
+				copy[i] = this->values[i];
+		}
+		return copy;
+	}
+
+	Record(int numValues) {
+		setNumValues(numValues);
+		this->values = nullptr;
+	}
+
 	Record(string* values, int numValues) {
-		this->numValues = numValues;
+		setNumValues(numValues);
+		setValues(values);
+		/*this->numValues = numValues;
 		if (values) {
 			this->values = new string[numValues];
 			for (int i = 0; i < numValues; i++)
 				this->values[i] = values[i];
 		}
 		else
-			this->values = nullptr;
+			this->values = nullptr;*/
 	}
 	//copy constructor
 	Record(const Record& r) {
