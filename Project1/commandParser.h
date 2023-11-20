@@ -5,8 +5,8 @@
 using namespace std;
 class commandParser {
     //table name in insert command starts here
-    const static int insertTableLocation = 12;
-    const static int fromSize = 4;
+    const static int INSERT_TABLE_LOCATION = 12;
+    const static int FROM_SIZE = 4;
     //function for counting the number of appearances of a character from a string, to be used only with other commandParser functions
     static int countChars(string s, char c) {
         int k = 0;
@@ -44,7 +44,7 @@ public:
         cout << params << endl;
        
 
-        int selectTableLocation = command.find("FROM") + fromSize;
+        int selectTableLocation = command.find("FROM") + FROM_SIZE;
         cout << selectTableLocation << endl;
 
         string tableName;
@@ -64,7 +64,7 @@ public:
 
         //extract table name
         string tableName;
-        for (int i = insertTableLocation; command[i] != ' '; i++)
+        for (int i = INSERT_TABLE_LOCATION; command[i] != ' '; i++)
             tableName.push_back(command[i]);
 
         //array of strings, with enough space for the number of values in the insert command
@@ -85,9 +85,23 @@ public:
 
         //instantiate a record (line of a table) and print to screen
         cout << "\nTable: " << tableName;
-        Record r(values, currentValue + 1);
-        r.displayRecord();
+        Record r1(values, currentValue + 1);
+        //r.displayRecord();
+        cout << r1 << endl;
 
+        //for testing operators and such
+        /*Record r2 = r1;
+        //cin >> r1;
+        if (r1 == r2) cout << "good\n";
+        //cout << r1;
+        r1 + "baba";
+        cout << r1;
+        r2++;
+        ++r2;
+        cout << r2;
+        if (r1 < 10) cout << "interesting\n";
+        cout << !r2;*/
+        
         delete[] values;
         return 1;
     }

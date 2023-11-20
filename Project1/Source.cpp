@@ -6,10 +6,10 @@
 using namespace std;
 
 //define regex patterns here
-const string regexStatements::displayStatement = "(DISPLAY) (TABLE) [_a-zA-Z]+";
-const string regexStatements::dropStatement = "(DROP) (TABLE) [_a-zA-Z]+";
-const string regexStatements::insertStatement = "(INSERT) (INTO) [_a-zA-Z]+ (VALUES) \\((.*?)\\)";
-const string regexStatements::selectStatement = "(SELECT) \\((.*?)\\) (FROM) [_a-zA-Z]+";
+string regexStatements::displayStatement = "(DISPLAY) (TABLE) [_a-zA-Z]+";
+string regexStatements::dropStatement = "(DROP) (TABLE) [_a-zA-Z]+";
+string regexStatements::insertStatement = "(INSERT) (INTO) [_a-zA-Z]+ (VALUES)\\((.*?)\\)";
+string regexStatements::selectStatement = "(SELECT) \\((.*?)\\) (FROM) [_a-zA-Z]+";
 
 int main() {
     string s;

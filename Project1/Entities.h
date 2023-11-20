@@ -5,16 +5,69 @@ using namespace std;
 
 //a class which represents a column definition from a table (data is stored using Records)
 class Column {
-	string name;
-	string type;//integer, text, numeric
+	string* values = nullptr; //name, type, default value
+	//string name;
+	//string type;//integer, text, numeric
 	int dimension;
-	string defaultValue;
+	//string defaultValue;
+	const static int VECTOR_SIZE = 3;
 public:
+	string getName() {
+		return this->values[0];
+	}
+	string getType() {
+		return this->values[1];
+	}
+	string getDefaultValue() {
+		return this->values[2];
+	}
+	int getDimension() {
+		return this->dimension;
+	}
+	void setName(string s) {
+		this->values[0] = s;
+	}
+	void setType(string s) {
+		this->values[1] = s;
+	}
+	void setDefaultValue(string s) {
+		this->values[2] = s;
+	}
+	void setDimension(int d) {
+		this->dimension = d;
+	}
 	Column(string name, string type, int dimension, string defaultValue) {
-		this->name = name;
-		this->type = type;
+		//this->name = name;
+		//this->type = type;
+		//this->dimension = dimension;
+		//this->defaultValue = defaultValue;
+		//this->dimension = dimension;
+		setDimension(dimension);
+		this->values = new string[VECTOR_SIZE];
+		setName(name);
+		setType(type);
+		setDefaultValue(defaultValue);
+		//this->values[0] = name;
+		//this->values[1] = type;
+		//this->values[2] = defaultValue;
+	}
+	Column(string* values, int dimension) {
 		this->dimension = dimension;
-		this->defaultValue = defaultValue;
+		if (values == nullptr)
+			this->values = nullptr;
+		else {
+			this->values = new string[VECTOR_SIZE];
+			for (int i = 0; i < VECTOR_SIZE; i++)
+				this->values[i] = values[i];
+		}
+	}
+
+
+
+	~Column() {
+		if (values)
+			delete[] values;
+		values = nullptr;
 	}
 };
 
@@ -24,42 +77,17 @@ class Record {
 	int numValues;
 public:
 	void setNumValues(int n) {
-		try {
-			string err;
-			if (n < 0) {
-				err = "Invalid number of values";
-				throw(err);
-			}
-			else {
-				this->numValues = n;
-			}
-		}
-		catch (string err) {
-			cout << endl << err << endl;
-		}
+			this->numValues = n;
 	}
 	int getNumValues() {
 		return this->numValues;
 	}
-
 	void setValues(string* values) {
-		try {
-			string err;
-			if (values == nullptr) {
-				err = "Invalid value array";
-				throw(err);
-			}
-			else {
-				if (this->values)
-					delete[] values;
-				this->values = new string[numValues];
-				for (int i = 0; i < numValues; i++)
-					this->values[i] = values[i];
-			}
-		}
-		catch (string err) {
-			cout << endl << err << endl;
-		}
+			if (this->values)
+				delete[] this->values;
+			this->values = new string[numValues];
+			for (int i = 0; i < numValues; i++)
+				this->values[i] = values[i];
 	}
 	string* getValues() {
 		string* copy = nullptr;
@@ -72,7 +100,7 @@ public:
 		}
 		return copy;
 	}
-
+//constructors
 	Record(int numValues) {
 		setNumValues(numValues);
 		this->values = nullptr;
@@ -81,14 +109,6 @@ public:
 	Record(string* values, int numValues) {
 		setNumValues(numValues);
 		setValues(values);
-		/*this->numValues = numValues;
-		if (values) {
-			this->values = new string[numValues];
-			for (int i = 0; i < numValues; i++)
-				this->values[i] = values[i];
-		}
-		else
-			this->values = nullptr;*/
 	}
 	//copy constructor
 	Record(const Record& r) {
@@ -114,8 +134,109 @@ public:
 		}
 		cout << endl;
 	}
+
+	void addValue(string s) {
+		if (values) {
+			string* copy = new string[numValues];
+			for (int i = 0; i < numValues; i++)
+				copy[i] = values[i];
+			delete[] values;
+			numValues++;
+			values = new string[numValues];
+			for (int i = 0; i < numValues - 1; i++)
+				values[i] = copy[i];
+			values[numValues - 1] = s;
+			delete[] copy;
+		}
+		else {
+			numValues = 1;
+			values = new string[numValues];
+			values[0] = s;
+		}
+	}
+	//= overloading
+	Record& operator=(const Record& r) {
+		if (this != &r) {
+			this->numValues = r.numValues;
+			if (this->values != nullptr) {
+				delete[] this->values;
+			}
+			if (r.values != nullptr) {
+				this->values = new string[r.numValues];
+				for (int i = 0; i < r.numValues; i++)
+					this->values[i] = r.numValues;
+			}
+			else
+				this->values = nullptr;
+		}
+		return *this;
+	}
+	//cast operator
+	explicit operator int() {
+		return this->numValues;
+	}
+	//index operator
+	string operator[](int index) {
+		if (values != nullptr && index >= 0 && index < numValues)
+			return values[index];
+	}
+	//== operator
+	bool operator==(Record r) {
+		return (this->numValues == r.numValues);
+	}
+	//< operator
+	bool operator<(int dimension) {
+		return(this->numValues < dimension);
+	}
+	//! operator
+	bool operator!() {
+		if (!values)
+			return true;
+		return false;
+	}
+	//+ operator
+	Record operator+(string s) {
+		Record copy = *this;
+		copy.addValue(s);
+
+		return copy;
+	}
+	//++ (increment) operators
+	Record& operator++() {
+		this->addValue("");
+		return *this;
+	}
+	Record operator++(int i) {
+		Record copy = *this;
+		this->addValue("");
+		
+		return copy;
+	}
+	//<< and >> operators
+	friend ostream& operator<<(ostream&, Record);
+	friend istream& operator>>(istream&, Record&);
 };
 
+ostream& operator<<(ostream& out, Record r) {
+	for (int i = 0; i < r.numValues; i++) {
+		out << endl << "Value on column " << i + 1 << " : " << r[i];
+	}
+	out << endl;
+	return out;
+}
+
+istream& operator>>(istream& in, Record& r) {
+	int i;
+	cout << endl << "Change record";
+	string* buffer = new string[r.numValues];
+	for (i = 0; i < r.numValues; i++) {
+		cout << "Value " << i + 1 << " : ";
+		in >> buffer[i];
+	}
+	r.setValues(buffer);
+	delete[] buffer;
+	return in;
+}
 
 //a class which represents a table
 class Table {
@@ -125,7 +246,8 @@ class Table {
 	int numRecords;
 	Column* columns;
 	Record* records;
-	//to implement ctor, copy ctor, desctor
+	//to implement ctor, copy ctor, desctor, some operators
 };
 
+//implement index class maybe
 

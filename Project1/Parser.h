@@ -30,7 +30,7 @@ public:
 				else if (regexStatements::checkRegex(commandType, "(DROP)")) {
 					//drop parser
 					cout << "this is a drop command\n";
-					if (regexStatements::checkRegex(statement, regexStatements::dropStatement)) {
+					if (regexStatements::checkRegex(statement, regexStatements::getDropStatement())) {
 						commandParser::dropParser(statement);
 					}
 					else {
@@ -41,7 +41,7 @@ public:
 				else if (regexStatements::checkRegex(commandType, "(DISPLAY)")) {
 					//display parser
 					cout << "this is a display command\n";
-					if (regexStatements::checkRegex(statement, regexStatements::displayStatement)) {
+					if (regexStatements::checkRegex(statement, regexStatements::getDisplayStatement())) {
 						commandParser::displayParser(statement);
 					}
 					else {
@@ -52,7 +52,7 @@ public:
 				else if (regexStatements::checkRegex(commandType, "(INSERT)")) {
 					//insert parser
 					cout << "this is an insert command\n";
-					if (regexStatements::checkRegex(statement, regexStatements::insertStatement)) {
+					if (regexStatements::checkRegex(statement, regexStatements::getInsertStatement())) {
 						if (!commandParser::insertParser(statement, err))
 							throw(err);
 					}
@@ -64,7 +64,7 @@ public:
 				else if (regexStatements::checkRegex(commandType, "(SELECT)")) {
 					//select parser
 					cout << "this is a select command\n";
-					if (regexStatements::checkRegex(statement, regexStatements::selectStatement))
+					if (regexStatements::checkRegex(statement, regexStatements::getSelectStatement()))
 					{
 						if (!commandParser::selectParser(statement, err))
 							throw(err);
