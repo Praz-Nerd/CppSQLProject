@@ -36,6 +36,11 @@ public:
 	void setDimension(int d) {
 		this->dimension = d;
 	}
+
+	// Default constructor
+	Column() : values(nullptr), dimension(0) {}
+
+
 	Column(string name, string type, int dimension, string defaultValue) {
 		//this->name = name;
 		//this->type = type;
@@ -76,18 +81,19 @@ class Record {
 	string* values;
 	int numValues;
 public:
+
 	void setNumValues(int n) {
-			this->numValues = n;
+		this->numValues = n;
 	}
 	int getNumValues() {
 		return this->numValues;
 	}
 	void setValues(string* values) {
-			if (this->values)
-				delete[] this->values;
-			this->values = new string[numValues];
-			for (int i = 0; i < numValues; i++)
-				this->values[i] = values[i];
+		if (this->values)
+			delete[] this->values;
+		this->values = new string[numValues];
+		for (int i = 0; i < numValues; i++)
+			this->values[i] = values[i];
 	}
 	string* getValues() {
 		string* copy = nullptr;
@@ -100,16 +106,25 @@ public:
 		}
 		return copy;
 	}
-//constructors
+	//constructors
+
+	// Default constructor
+	Record() : values(nullptr), numValues(0) {}
+	// Constructor with values and numValues
+	Record(string* values, int numValues) : numValues(numValues) {
+		setValues(values);
+	}
+
 	Record(int numValues) {
 		setNumValues(numValues);
 		this->values = nullptr;
 	}
 
-	Record(string* values, int numValues) {
+	/*Record(string* values, int numValues) {
 		setNumValues(numValues);
 		setValues(values);
-	}
+	}*/
+
 	//copy constructor
 	Record(const Record& r) {
 		this->numValues = r.numValues;
@@ -209,7 +224,7 @@ public:
 	Record operator++(int i) {
 		Record copy = *this;
 		this->addValue("");
-		
+
 		return copy;
 	}
 	//<< and >> operators
@@ -247,6 +262,73 @@ class Table {
 	Column* columns;
 	Record* records;
 	//to implement ctor, copy ctor, desctor, some operators
+public:
+	// Constructor
+	Table(string name, int numColumns, int numRecords, Column* columns, Record* records) :
+		name(name), numColumns(numColumns), numRecords(numRecords) {
+		this->columns = new Column[numColumns];
+		this->records = new Record[numRecords];
+
+		// Copy columns
+		for (int i = 0; i < numColumns; i++) {
+			this->columns[i] = columns[i];
+		}
+
+		// Copy records
+		for (int i = 0; i < numRecords; i++) {
+			this->records[i] = records[i];
+		}
+	}
+
+	// Copy Constructor
+	Table(const Table& table) : name(table.name), numColumns(table.numColumns), numRecords(table.numRecords) {
+		this->columns = new Column[numColumns];
+		this->records = new Record[numRecords];
+
+		// Copy columns
+		for (int i = 0; i < numColumns; i++) {
+			this->columns[i] = table.columns[i];
+		}
+
+		// Copy records
+		for (int i = 0; i < numRecords; i++) {
+			this->records[i] = table.records[i];
+		}
+	}
+
+	// Destructor
+	~Table() {
+		delete[] columns;
+		delete[] records;
+	}
+
+	// Assignment operator
+	Table& operator=(const Table& table) {
+		if (this != &table) {
+			// Delete existing data
+			delete[] columns;
+			delete[] records;
+
+			// Copy new data
+			this->name = table.name;
+			this->numColumns = table.numColumns;
+			this->numRecords = table.numRecords;
+
+			// Copy columns
+			this->columns = new Column[numColumns];
+			for (int i = 0; i < numColumns; i++) {
+				this->columns[i] = table.columns[i];
+			}
+
+			// Copy records
+			this->records = new Record[numRecords];
+			for (int i = 0; i < numRecords; i++) {
+				this->records[i] = table.records[i];
+			}
+		}
+		return *this;
+	}
+
 };
 
 //implement index class maybe
