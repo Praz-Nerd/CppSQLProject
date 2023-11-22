@@ -261,8 +261,37 @@ class Table {
 	int numRecords;
 	Column* columns;
 	Record* records;
-	//to implement ctor, copy ctor, desctor, some operators
+
 public:
+	// Accessor functions for reading and writing values
+	string getName() const {
+		return name;
+	}
+
+	int getNumColumns() const {
+		return numColumns;
+	}
+
+	int getNumRecords() const {
+		return numRecords;
+	}
+
+	// Generic methods for processing/displaying attributes
+	void displayTableInfo() const {
+		cout << "Table Name: " << getName() << ", Number of Columns: " << getNumColumns() << ", Number of Records: " << getNumRecords() << endl;
+	}
+
+	void performOperation() const {
+		cout << "Performing an operation on the table" << endl;
+	}
+	//Default constructor
+	Table() {
+		this->numColumns = 0; 
+		this->numRecords = 0;
+		this->columns = nullptr;
+		this->records = nullptr;
+	} 
+
 	// Constructor
 	Table(string name, int numColumns, int numRecords, Column* columns, Record* records) :
 		name(name), numColumns(numColumns), numRecords(numRecords) {
@@ -328,8 +357,234 @@ public:
 		}
 		return *this;
 	}
+	// Indexing operator []
+	Column& operator[](int index) {
+		if (index >= 0 && index < numColumns) {
+			return columns[index];
+		}
+		else {
+			throw out_of_range("Column index out of range");
+		}
+	}
 
+	// Mathematical operator +
+	Table operator+(const Table& other) const {
+		Table result;
+		result.name = this->name + other.name;
+		result.numColumns = this->numColumns + other.numColumns;
+		result.numRecords = this->numRecords + other.numRecords;
+
+		// Allocate memory for columns and records in the result table
+		result.columns = new Column[result.numColumns];
+		result.records = new Record[result.numRecords];
+
+		// Copy columns and records from both tables to the result table
+		for (int i = 0; i < this->numColumns; ++i) {
+			result.columns[i] = this->columns[i];
+		}
+
+		for (int i = 0; i < other.numColumns; ++i) {
+			result.columns[this->numColumns + i] = other.columns[i];
+		}
+
+		for (int i = 0; i < this->numRecords; ++i) {
+			result.records[i] = this->records[i];
+		}
+
+		for (int i = 0; i < other.numRecords; ++i) {
+			result.records[this->numRecords + i] = other.records[i];
+		}
+
+		return result;
+	}
+
+	// Increment operators ++
+	Table& operator++() {
+		++numColumns;
+		++numRecords;
+		return *this;
+	}
+
+	Table operator++(int) {
+		Table copy = *this;
+		++(*this);
+		return copy;
+	}
+
+	// << operator
+	friend ostream& operator<<(ostream& out, const Table& table) {
+		out << "Table: " << table.getName() << ", Columns: " << table.getNumColumns() << ", Records: " << table.getNumRecords();
+		return out;
+	}
+
+	// >> operator
+	friend istream& operator>>(istream& in, Table& table) {
+		cout << "Enter Table Name: ";
+		in >> table.name;
+		cout << "Enter Number of Columns: ";
+		in >> table.numColumns;
+		cout << "Enter Number of Records: ";
+		in >> table.numRecords;
+		return in;
+	}
+
+	// Cast operator
+	explicit operator string() const {
+		return "Table: " + name + ", Columns: " + to_string(numColumns) + ", Records: " + to_string(numRecords);
+	}
+
+	// Negation operator !
+	bool operator!() const {
+		return numColumns == 0 && numRecords == 0;
+	}
+
+	// Conditional operators (<, >, <=, >=)
+	bool operator<(const Table& other) const {
+		return numColumns < other.numColumns && numRecords < other.numRecords;
+	}
+
+	bool operator>(const Table& other) const {
+		return numColumns > other.numColumns && numRecords > other.numRecords;
+	}
+
+	bool operator<=(const Table& other) const {
+		return numColumns <= other.numColumns && numRecords <= other.numRecords;
+	}
+
+	bool operator>=(const Table& other) const {
+		return numColumns >= other.numColumns && numRecords >= other.numRecords;
+	}
+
+	// Equality operator ==
+	bool operator==(const Table& other) const {
+		return name == other.name && numColumns == other.numColumns && numRecords == other.numRecords;
+	}
 };
 
 //implement index class maybe
 
+class Index {
+private:
+	vector<Table> tables;
+
+public:
+	// Accessor functions for reading and writing values
+	int getNumTables() const {
+		return tables.size();
+	}
+
+	// Generic methods for processing/displaying attributes
+	void displayIndexInfo() const {
+		cout << "Number of Tables in Index: " << getNumTables() << endl;
+	}
+
+	void performOperationOnTables() const {
+		cout << "Performing an operation on all tables in the index" << endl;
+	}
+
+	// Constructors, copy constructor, destructor, and operator overloads
+	Index() {}  // Default constructor
+
+	Index(const vector<Table>& tables) : tables(tables) {}
+
+	Index(const Index& other) : tables(other.tables) {}
+
+	~Index() {}
+
+	Index& operator=(const Index& other) {
+		if (this != &other) {
+			this->tables = other.tables;
+		}
+		return *this;
+	}
+
+	// Indexing operator []
+	const Table& operator[](int index) const {
+		if (index >= 0 && index < tables.size()) {
+			return tables[index];
+		}
+		else {
+			throw out_of_range("Table index out of range");
+		}
+	}
+
+	// Mathematical operator +
+	Index operator+(const Index& other) const {
+		Index result = *this;
+		result.tables.insert(result.tables.end(), other.tables.begin(), other.tables.end());
+		return result;
+	}
+
+	// Increment operators ++
+	Index& operator++() {
+		for (Table& table : tables) {
+			++table;
+		}
+		return *this;
+	}
+
+	Index operator++(int) {
+		Index copy = *this;
+		++(*this);
+		return copy;
+	}
+
+	// Cast operator (explicit)
+	explicit operator string() const {
+		return "Index with " + to_string(getNumTables()) + " tables";
+	}
+
+	// Negation operator !
+	bool operator!() const {
+		return tables.empty();
+	}
+
+	// Conditional operators (<, >, <=, >=)
+	bool operator<(const Index& other) const {
+		return getNumTables() < other.getNumTables();
+	}
+
+	bool operator>(const Index& other) const {
+		return getNumTables() > other.getNumTables();
+	}
+
+	bool operator<=(const Index& other) const {
+		return getNumTables() <= other.getNumTables();
+	}
+
+	bool operator>=(const Index& other) const {
+		return getNumTables() >= other.getNumTables();
+	}
+
+	// Equality operator ==
+	bool operator==(const Index& other) const {
+		return tables == other.tables;
+	}
+
+	// << operator
+	friend ostream& operator<<(ostream& out, const Index& index) {
+		out << "Index with " << index.getNumTables() << " tables" << endl;
+		for (const Table& table : index.tables) {
+			out << table << endl;
+		}
+		return out;
+	}
+
+	// >> operator
+	friend istream& operator>>(istream& in, Index& index) {
+		int numTables;
+		cout << "Enter the number of tables in the index: ";
+		in >> numTables;
+
+		index.tables.clear(); // Clear existing tables
+
+		for (int i = 0; i < numTables; ++i) {
+			Table table;
+			cout << "Enter details for Table " << i + 1 << ":" << endl;
+			in >> table;
+			index.tables.push_back(table);
+		}
+
+		return in;
+	}
+};
