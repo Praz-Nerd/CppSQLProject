@@ -97,7 +97,7 @@ public:
         if (command.find("WHERE") != string::npos) {
             filterLocation = command.find("WHERE") + WHERE_SIZE;
             filter = extractString(command, filterLocation + 1, command.length());
-            if (countChars(filter, ' ') != 2) {
+            if (countChars(filter, ' ') != 2 || countChars(filter, ',')) {
                 err = "Invalid filter";
                 return 0;
             }
