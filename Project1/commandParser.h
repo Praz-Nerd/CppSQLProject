@@ -4,7 +4,6 @@
 #include "Entities.h"
 using namespace std;
 class commandParser {
-    //table name in insert command starts here
     const static int INSERT_TABLE_LOCATION = 12;
     const static int FROM_SIZE = 4;
     //function for counting the number of appearances of a character from a string, to be used only with other commandParser functions
@@ -19,20 +18,24 @@ class commandParser {
 public:
     //functions for individually parsing a command
     static int displayParser(string& command) {
-        string tableName = "";
+        string entityName = "";
         for (int i = command.find_last_of(' ') + 1; i < command.length(); i++)
-            tableName.push_back(command[i]);
+            entityName.push_back(command[i]);
 
-        cout << "Table to display: " << tableName << endl;
+        cout << "Table to display: " << entityName << endl;
         return 1;
     }
 
     static int dropParser(string& command) {
-        string tableName = "";
+        string entityName = "";
         for (int i = command.find_last_of(' ') + 1; i < command.length(); i++)
-            tableName.push_back(command[i]);
+            entityName.push_back(command[i]);
 
-        cout << "Table to drop: " << tableName << endl;
+        if (command.find("TABLE")!=string::npos)
+            cout << "Table to drop: ";
+        else
+            cout << "Index to drop: ";
+         cout << entityName << endl;
         return 1;
     }
 

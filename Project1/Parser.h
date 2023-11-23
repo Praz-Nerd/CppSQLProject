@@ -34,7 +34,7 @@ public:
 						commandParser::dropParser(statement);
 					}
 					else {
-						err = "Drop command not properly formatted\nDROP TABLE table_name";
+						err = "Drop command not properly formatted\nDROP [TABLE|INDEX] entity_name";
 						throw(err);
 					}
 				}

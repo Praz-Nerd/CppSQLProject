@@ -37,19 +37,11 @@ public:
 		this->dimension = d;
 	}
 	Column(string name, string type, int dimension, string defaultValue) {
-		//this->name = name;
-		//this->type = type;
-		//this->dimension = dimension;
-		//this->defaultValue = defaultValue;
-		//this->dimension = dimension;
 		setDimension(dimension);
 		this->values = new string[VECTOR_SIZE];
 		setName(name);
 		setType(type);
 		setDefaultValue(defaultValue);
-		//this->values[0] = name;
-		//this->values[1] = type;
-		//this->values[2] = defaultValue;
 	}
 	Column(string* values, int dimension) {
 		this->dimension = dimension;
