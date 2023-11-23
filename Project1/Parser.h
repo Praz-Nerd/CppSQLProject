@@ -84,6 +84,14 @@ public:
 				else if (regexStatements::checkRegex(commandType, "(DELETE)")) {
 					//delete parser
 					cout << "this is a delete command\n";
+					if (regexStatements::checkRegex(statement, regexStatements::getDeleteStatement())) {
+						if (!commandParser::deleteParser(statement, err))
+							throw(err);
+					}
+					else {
+						err = "Delete command not properly formatted\nDELETE FROM table_name WHERE condition";
+						throw(err);
+					}
 				}
 				else {
 					err = "Invalid command type";
