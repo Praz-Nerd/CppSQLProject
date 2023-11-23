@@ -6,6 +6,7 @@ using namespace std;
 class commandParser {
     const static int INSERT_TABLE_LOCATION = 12;
     const static int FROM_SIZE = 4;
+    const static int WHERE_SIZE = 5;
     //function for counting the number of appearances of a character from a string, to be used only with other commandParser functions
     static int countChars(string s, char c) {
         int k = 0;
@@ -14,6 +15,31 @@ class commandParser {
                 k++;
         }
         return k;
+    }
+    static string* extractParameters(string& s, int start, int end, char separator = ',') {
+        string* values = new string[countChars(s, separator) + 1];
+        int currentValue = 0;
+        for (int i = start; i < end; i++) {
+            if (s[i] == ' ') {
+                delete[] values;
+                return nullptr;
+            }
+            else if (s[i] == separator)
+                currentValue++;
+            else
+                values[currentValue].push_back(s[i]);
+        }
+        return values;
+    }
+    static string extractFilter(string& s) {
+        string filter = "";
+
+        if (s.find("WHERE") != string::npos) {
+            int filterLocation = s.find("WHERE") + WHERE_SIZE;
+            for (int i = filterLocation + 1; i < s.length(); i++)
+                filter.push_back(s[i]);
+        }
+        return filter;
     }
 public:
     //functions for individually parsing a command
@@ -41,23 +67,51 @@ public:
 
     static int selectParser(string& command, string& err)
     {
+        string params;
+        bool hasFilter = false;
+        if (command.find("ALL") != string::npos)
+            params = "all";
+        else {
+            int length = command.find_last_of(')') - command.find_first_of('(') - 1;
+            params = command.substr(command.find_first_of('(') + 1, length);
+
+            if (params.find(' ') != string::npos) {
+                err = "Invalid parameter list";
+                return 0;
+            }
+        }
+
         //length of the parameters substring from an select command
-        int length = command.find_last_of(')') - command.find_first_of('(') - 1;
-        string params = command.substr(command.find_first_of('(') + 1, length);
-        cout << params << endl;
-       
-
         int selectTableLocation = command.find("FROM") + FROM_SIZE;
-        cout << selectTableLocation << endl;
-
-        string tableName;
-        for (int i = selectTableLocation;(i < command.length()); i++)
+        cout << endl;
+        string tableName = "";
+        for (int i = selectTableLocation+1; i < command.length(); i++) {
+            if (command[i] == ' ')
+                break;
             tableName.push_back(command[i]);
+        }
 
-        cout << tableName;
+        string filter = extractFilter(command);
+        if (filter != "")
+            hasFilter = true;
+
+        cout << "Table: " << tableName << endl;
+        if (params != "all")
+            cout << "Columns: " << countChars(params, ',') + 1 << endl;
+        cout << "Columns: " << params << endl;
+        cout << "Filter: " << hasFilter << endl;
+        if (hasFilter)
+            cout << "Filter column: " << filter << endl;
+
+        //string* values = extractParameters(params, 0, params.length());
+
+        //if (!values) {
+        //    err = "Invalid parameter list";
+        //    //delete[] values;
+        //    return 0;
+        //}
+        //delete[] values;
         return 1;
-
-
     }
 
     static int insertParser(string& command, string& err) {

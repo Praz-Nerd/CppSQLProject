@@ -9,7 +9,7 @@ using namespace std;
 string regexStatements::displayStatement = "(DISPLAY) (TABLE) [_a-zA-Z]+";
 string regexStatements::dropStatement = "(DROP) (?:TABLE|INDEX) [_a-zA-Z]+";
 string regexStatements::insertStatement = "(INSERT) (INTO) [_a-zA-Z]+ (VALUES)\\s*\\((.*?)\\)";
-string regexStatements::selectStatement = "(SELECT)\\s*(?:\\((.*?)\\)|ALL) (FROM) [_a-zA-Z]+ (?:WHERE (.*?)|)";
+string regexStatements::selectStatement = "(SELECT)\\s*(?:\\((.*?)\\)|ALL) (FROM) [_a-zA-Z]+\\s*(?:WHERE (.*?)|)";
 string regexStatements::deleteStatement = "(DELETE) (FROM) [_a-zA-Z]+ (WHERE) (.*?)";
 string regexStatements::updateStatement = "(UPDATE) [_a-zA-Z]+ (SET) (.*?) (WHERE) (.*?)";
 string regexStatements::createTableStatement = "(CREATE) (TABLE) [_a-zA-Z]+ (?:IF NOT EXISTS|)\\s*\\((.*?)\\)";
