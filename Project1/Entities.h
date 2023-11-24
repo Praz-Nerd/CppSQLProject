@@ -36,6 +36,8 @@ public:
 	void setDimension(int d) {
 		this->dimension = d;
 	}
+
+	//constructors
 	Column(string name, string type, int dimension, string defaultValue) {
 		setDimension(dimension);
 		this->values = new string[VECTOR_SIZE];
@@ -72,10 +74,29 @@ public:
 		this->values = nullptr;
 	}
 
+	// a function for displaying the column
 	void displayColumn() 
 	{
 			cout << values[1] << " " << values[2] << " " << values[3] << endl;
 	
+	}
+
+	//= overloading
+	Column& operator=(const Column& c) {
+		if (this != &c) {
+			this->dimension = c.dimension;
+			if (this->values != nullptr) {
+				delete[] this->values;
+			}
+			if (c.values != nullptr) {
+				this->values = new string[VECTOR_SIZE];
+				for (int i = 0; i < VECTOR_SIZE; i++)
+					this->values[i] = c.values[i];
+			}
+			else
+				this->values = nullptr;
+		}
+		return *this;
 	}
 
 	//cast operator
@@ -101,6 +122,8 @@ public:
 			return true;
 		return false;
 	}
+
+
 };
 
 //a class which represents a line from a table
