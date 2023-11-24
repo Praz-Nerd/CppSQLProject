@@ -4,16 +4,37 @@
 using namespace std;
 //a static class which stores regex patterns used in input validation
 class regexStatements {
-    //statically defined regex patterns, for input validation
+    static string createStatement;
+    static string dropStatement;
+    static string displayStatement;
+    static string insertStatement;
+    static string selectStatement;
+    static string updateStatement;
+    static string deleteStatement;
 public:
-    static const std::string createStatement;
-    static const std::string dropStatement;
-    static const std::string displayStatement;
-    static const std::string insertStatement;
-    static const std::string selectStatement;
-    static const std::string updateStatement;
-    static const std::string deleteStatement;
+    static string getCreateStatement() {
+        return createStatement;
+    }
+    static string getDropStatement() {
+        return dropStatement;
+    }
+    static string getDisplayStatement() {
+        return displayStatement;
+    }
+    static string getInsertStatement() {
+        return insertStatement;
+    }
+    static string getSelectStatement() {
+        return selectStatement;
+    }
+    static string getUpdateStatement() {
+        return updateStatement;
+    }
+    static string getDeleteStatement() {
+        return deleteStatement;
+    }
 
+    //statically defined regex patterns, for input validation
     //static boolean function for checking regex patterns, case sensitivity is disabled by default
     static bool checkRegex(string statement, string regexPattern, bool caseSensitive = true) {
         if (!caseSensitive)
