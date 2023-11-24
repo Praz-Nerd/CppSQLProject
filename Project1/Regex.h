@@ -4,7 +4,8 @@
 using namespace std;
 //a static class which stores regex patterns used in input validation
 class regexStatements {
-    static string createStatement;
+    static string createTableStatement;
+    static string createIndexStatement;
     static string dropStatement;
     static string displayStatement;
     static string insertStatement;
@@ -12,8 +13,11 @@ class regexStatements {
     static string updateStatement;
     static string deleteStatement;
 public:
-    static string getCreateStatement() {
-        return createStatement;
+    static string getCreateTableStatement() {
+        return createTableStatement;
+    }
+    static string getCreateIndexStatement() {
+        return createIndexStatement;
     }
     static string getDropStatement() {
         return dropStatement;
