@@ -53,13 +53,53 @@ public:
 				this->values[i] = values[i];
 		}
 	}
+	//copy constructor
+	Column(const Column& c) {
+		this->dimension = c.dimension;
+		if (c.dimension) {
+			this->values = new string[VECTOR_SIZE];
+			for (int i = 0; i < VECTOR_SIZE; i++)
+				this->values[i] = c.values[i];
+		}
+		else
+			this->values = nullptr;
+	}
 
-
-
+	//destructor
 	~Column() {
-		if (values)
-			delete[] values;
-		values = nullptr;
+		if (this->values)
+			delete[] this->values;
+		this->values = nullptr;
+	}
+
+	void displayColumn() 
+	{
+			cout << values[1] << " " << values[2] << " " << values[3] << endl;
+	
+	}
+
+	//cast operator
+	explicit operator int() {
+		return this->dimension;
+	}
+	//index operator
+	string operator[](int index) {
+		if (values != nullptr && index >= 0 && index < dimension)
+			return values[index];
+	}
+	//== operator
+	bool operator==(Column c) {
+		return (this->values[0] == c.values[0]);
+	}
+	//< operator
+	bool operator<(int dimension) {
+		return(this->dimension < dimension);
+	}
+	//! operator
+	bool operator!() {
+		if (!this->dimension)
+			return true;
+		return false;
 	}
 };
 
