@@ -4,11 +4,12 @@
 #include "Regex.h"
 #include "commandParser.h"
 using namespace std;
-//a static class with functions for checking and extracting data from a SQL statement
+//a static class with functions for checking a SQL statement
 class Parser {
 public:
 	//function for recognizing commands at a superficial level
-	static int commandParser(string statement)
+	//TO BE REMADE LATER
+	static int superficialParser(string statement)
 	{
 		string err = "";
 		try {
@@ -18,42 +19,57 @@ public:
 				for (i = 0; (statement[i] != ' ') && (i < statement.length()); i++)
 					commandType.push_back(statement[i]);
 
+				//command parser instantiation
+				commandParser cp(statement, commandType);
+
 				//function calls for each type of command go here
 				if (i == statement.length()) {
 					err = "Invalid command type";
 					throw(err);
 				}
-				else if (regexStatements::checkRegex(commandType, "(CREATE)")) {
+				else if (cp.getCommandType() == "CREATE") {
 					//create parser
 					cout << "this is a create command\n";
+					if (regexStatements::checkRegex(statement, regexStatements::getCreateIndexStatement())) {
+						if (!cp.createIndexParser(err))
+							throw(err);
+					}
+					else if (regexStatements::checkRegex(statement, regexStatements::getCreateTableStatement())) {
+						if (!cp.createTableParser(err))
+							throw(err);
+					}
+					else {
+						err = "Create command not properly formatted\nCREATE TABLE table_name [IF NOT EXISTS] ((col_name,col_type,col_size,col_default),...)\nCREATE INDEX [IF NOT EXISTS] index_name ON table_name (column_name)";
+						throw(err);
+					}
 				}
-				else if (regexStatements::checkRegex(commandType, "(DROP)")) {
+				else if (cp.getCommandType() == "DROP") {
 					//drop parser
 					cout << "this is a drop command\n";
 					if (regexStatements::checkRegex(statement, regexStatements::getDropStatement())) {
-						commandParser::dropParser(statement);
+						cp.dropParser();
 					}
 					else {
 						err = "Drop command not properly formatted\nDROP [TABLE|INDEX] entity_name";
 						throw(err);
 					}
 				}
-				else if (regexStatements::checkRegex(commandType, "(DISPLAY)")) {
+				else if (cp.getCommandType() == "DISPLAY") {
 					//display parser
 					cout << "this is a display command\n";
 					if (regexStatements::checkRegex(statement, regexStatements::getDisplayStatement())) {
-						commandParser::displayParser(statement);
+						cp.displayParser();
 					}
 					else {
 						err = "Display command not properly formatted\nDISPLAY TABLE table_name;";
 						throw(err);
 					}
 				}
-				else if (regexStatements::checkRegex(commandType, "(INSERT)")) {
+				else if (cp.getCommandType() == "INSERT") {
 					//insert parser
 					cout << "this is an insert command\n";
 					if (regexStatements::checkRegex(statement, regexStatements::getInsertStatement())) {
-						if (!commandParser::insertParser(statement, err))
+						if (!cp.insertParser(err))
 							throw(err);
 					}
 					else {
@@ -61,12 +77,12 @@ public:
 						throw(err);
 					}
 				}
-				else if (regexStatements::checkRegex(commandType, "(SELECT)")) {
+				else if (cp.getCommandType() == "SELECT") {
 					//select parser
 					cout << "this is a select command\n";
 					if (regexStatements::checkRegex(statement, regexStatements::getSelectStatement()))
 					{
-						if (!commandParser::selectParser(statement, err))
+						if (!cp.selectParser(err))
 							throw(err);
 					}
 					else
@@ -77,15 +93,23 @@ public:
 
 
 				}
-				else if (regexStatements::checkRegex(commandType, "(UPDATE)")) {
+				else if (cp.getCommandType() == "UPDATE") {
 					//update parser
 					cout << "this is an update command\n";
+					if (regexStatements::checkRegex(statement, regexStatements::getUpdateStatement())) {
+						if (!cp.updateParser(err))
+							throw(err);
+					}
+					else {
+						err = "Update command not properly formatted\nUPDATE table_name SET column_name = value WHERE condition";
+						throw(err);
+					}
 				}
-				else if (regexStatements::checkRegex(commandType, "(DELETE)")) {
+				else if (cp.getCommandType() == "DELETE") {
 					//delete parser
 					cout << "this is a delete command\n";
 					if (regexStatements::checkRegex(statement, regexStatements::getDeleteStatement())) {
-						if (!commandParser::deleteParser(statement, err))
+						if (!cp.deleteParser(err))
 							throw(err);
 					}
 					else {
