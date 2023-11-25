@@ -156,7 +156,23 @@ public:
             string.push_back(s[i]);
         return string;
     }
+    //extract an integer from a string with only numbers
+    static int toInt(string& s) {
+        int x = 0;
+        bool isNegative = false;
 
+        for (int i = 0; i < s.length(); i++) {
+            if (i == 0 && s[i] == '-')
+                isNegative = true;
+            else
+                x = x * 10 + (s[i] - '0');
+        }
+
+        if (isNegative)
+            x = x * (-1);
+
+        return x;
+    }
     //functions for individually parsing a command
     int displayParser() {
         string entityName = extractString(this->getCommand(), this->getCommand().find_last_of(' ') + 1, this->getCommand().length());
@@ -403,7 +419,7 @@ public:
             cout << "Type: " << values[i+1] << endl;
             cout << "Size: " << values[i+2] << endl;
             cout << "Default values: " << values[i+3] << endl;
-            //Column c(values[i], values[i + 1], (int)values[i + 2], values[i + 3]);
+            Column c(values[i], values[i + 1], toInt(values[i+2]), values[i + 3]);
             k++;
         }
            

@@ -28,7 +28,7 @@ public:
 		if(!s.empty())
 			this->values[0] = s;
 		else {
-			string err = "Invalid field";
+			string err = "Invalid column name";
 			throw(err);
 		}
 	}
@@ -36,7 +36,7 @@ public:
 		if(s == "integer" || s == "text" || s == "float")
 			this->values[1] = s;
 		else {
-			string err = "Invalid field";
+			string err = "Invalid column type";
 			throw(err);
 		}
 	}
@@ -44,7 +44,7 @@ public:
 		if(!s.empty())
 			this->values[2] = s;
 		else {
-			string err = "Invalid field";
+			string err = "Invalid default value";
 			throw(err);
 		}
 	}
@@ -52,7 +52,7 @@ public:
 		if(d > 0)
 			this->dimension = d;
 		else {
-			string err = "Invalid field";
+			string err = "Invalid dimension";
 			throw(err);
 		}
 	}
