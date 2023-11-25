@@ -16,10 +16,12 @@ public:
 
 	//consttructors
 	Interpreter(string statement) {
+		regexStatements::removeSpaces(statement);
 		setStatement(statement);
 	}
 
 	Interpreter(string statement, int& statementNumber) : statementNumber(statementNumber) {
+		regexStatements::removeSpaces(statement);
 		setStatement(statement);
 	}
 
