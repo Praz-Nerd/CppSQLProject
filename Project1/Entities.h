@@ -720,3 +720,11 @@ private:
 		}
 	}
 };
+
+class DB {
+	Table* tables;
+	Index* indexes;
+	int numTables;
+	int numIndexes;
+	//need implementations
+};
