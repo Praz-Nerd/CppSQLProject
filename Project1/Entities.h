@@ -37,10 +37,6 @@ public:
 		this->dimension = d;
 	}
 
-	// Default constructor
-	Column() : values(nullptr), dimension(0) {}
-
-
 	Column(string name, string type, int dimension, string defaultValue) {
 		setDimension(dimension);
 		this->values = new string[VECTOR_SIZE];
@@ -58,14 +54,75 @@ public:
 				this->values[i] = values[i];
 		}
 	}
-
-
-
-	~Column() {
-		if (values)
-			delete[] values;
-		values = nullptr;
+	//copy constructor
+	Column(const Column& c) {
+		this->dimension = c.dimension;
+		if (c.dimension) {
+			this->values = new string[VECTOR_SIZE];
+			for (int i = 0; i < VECTOR_SIZE; i++)
+				this->values[i] = c.values[i];
+		}
+		else
+			this->values = nullptr;
 	}
+
+	//destructor
+	~Column() {
+		if (this->values)
+			delete[] this->values;
+		this->values = nullptr;
+	}
+
+	// a function for displaying the column
+	void displayColumn() 
+	{
+			cout << values[1] << " " << values[2] << " " << values[3] << endl;
+	
+	}
+
+	//= overloading
+	Column& operator=(const Column& c) {
+		if (this != &c) {
+			this->dimension = c.dimension;
+			if (this->values != nullptr) {
+				delete[] this->values;
+			}
+			if (c.values != nullptr) {
+				this->values = new string[VECTOR_SIZE];
+				for (int i = 0; i < VECTOR_SIZE; i++)
+					this->values[i] = c.values[i];
+			}
+			else
+				this->values = nullptr;
+		}
+		return *this;
+	}
+
+	//cast operator
+	explicit operator int() {
+		return this->dimension;
+	}
+	//index operator
+	string operator[](int index) {
+		if (values != nullptr && index >= 0 && index < dimension)
+			return values[index];
+	}
+	//== operator
+	bool operator==(Column c) {
+		return (this->values[0] == c.values[0]);
+	}
+	//< operator
+	bool operator<(int dimension) {
+		return(this->dimension < dimension);
+	}
+	//! operator
+	bool operator!() {
+		if (!this->dimension)
+			return true;
+		return false;
+	}
+
+
 };
 
 //a class which represents a line from a table
