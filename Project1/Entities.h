@@ -255,29 +255,28 @@ class Table
 	Record* records;
 
 public:
-	// Accessor functions for reading and writing values
-	string getName() const 
+	string getName()
 	{
 		return name;
 	}
 
-	int getNumColumns() const 
+	int getNumColumns() 
 	{
 		return numColumns;
 	}
 
-	int getNumRecords() const 
+	int getNumRecords()
 	{
 		return numRecords;
 	}
 
 	// Generic methods for processing/displaying attributes
-	void displayTableInfo() const 
+	void displayTableInfo()
 	{
-		cout << "Table Name: " << getName() << ", Number of Columns: " << getNumColumns() << ", Number of Records: " << getNumRecords() << endl;
+		cout << "Table Name: " << name << ", Number of Columns: " << numColumns << ", Number of Records: " << numRecords << endl;
 	}
 
-	void performOperation() const 
+	void performOperation()
 	{
 		cout << "Performing an operation on the table" << endl;
 	}
@@ -317,7 +316,7 @@ public:
 		this->records = new Record[numRecords];
 
 		// Copy columns
-		for (int i = 0; i < numColumns; i++) 
+		for (int i = 0; i < numColumns; i++)
 		{
 			this->columns[i] = table.columns[i];
 		}
@@ -337,9 +336,9 @@ public:
 	}
 
 	// Assignment operator
-	Table& operator=(const Table& table) 
+	Table& operator=(const Table& table)
 	{
-		if (this != &table) 
+		if (this != &table)
 		{
 			// Delete existing data
 			delete[] columns;
@@ -378,7 +377,7 @@ public:
 	}
 
 	// Mathematical operator +
-	Table operator+(const Table& other) const 
+	Table operator+(const Table& other)
 	{
 		Table result;
 		result.name = this->name + other.name;
@@ -414,14 +413,14 @@ public:
 	}
 
 	// Increment operators ++
-	Table& operator++() 
+	Table& operator++()
 	{
 		++numColumns;
 		++numRecords;
 		return *this;
 	}
 
-	Table operator++(int) 
+	Table operator++(int)
 	{
 		Table copy = *this;
 		++(*this);
@@ -431,12 +430,12 @@ public:
 	// << operator
 	friend ostream& operator<<(ostream& out, const Table& table) 
 	{
-		out << "Table: " << table.getName() << ", Columns: " << table.getNumColumns() << ", Records: " << table.getNumRecords();
+		out << "Table: " << table.name << ", Columns: " << table.numColumns << ", Records: " << table.numRecords;
 		return out;
 	}
 
 	// >> operator
-	friend istream& operator>>(istream& in, Table& table) 
+	friend istream& operator>>(istream& in, Table& table)
 	{
 		cout << "Enter Table Name: ";
 		in >> table.name;
@@ -448,40 +447,40 @@ public:
 	}
 
 	// Cast operator
-	explicit operator string() const 
+	explicit operator string()
 	{
 		return "Table: " + name + ", Columns: " + to_string(numColumns) + ", Records: " + to_string(numRecords);
 	}
 
 	// Negation operator !
-	bool operator!() const 
+	bool operator!()
 	{
 		return numColumns == 0 && numRecords == 0;
 	}
 
 	// Conditional operators (<, >, <=, >=)
-	bool operator<(const Table& other) const 
+	bool operator<(const Table& other)
 	{
 		return numColumns < other.numColumns && numRecords < other.numRecords;
 	}
 
-	bool operator>(const Table& other) const 
+	bool operator>(const Table& other)
 	{
 		return numColumns > other.numColumns && numRecords > other.numRecords;
 	}
 
-	bool operator<=(const Table& other) const 
+	bool operator<=(const Table& other)
 	{
 		return numColumns <= other.numColumns && numRecords <= other.numRecords;
 	}
 
-	bool operator>=(const Table& other) const 
+	bool operator>=(const Table& other)
 	{
 		return numColumns >= other.numColumns && numRecords >= other.numRecords;
 	}
 
 	// Equality operator ==
-	bool operator==(const Table& other) const 
+	bool operator==(const Table& other)
 	{
 		return name == other.name && numColumns == other.numColumns && numRecords == other.numRecords;
 	}
@@ -495,7 +494,7 @@ private:
 	string name;
 	Table** tables; // Dynamic array of Table pointers
 	int numTables;
-
+	int capacity;
 public:
 	// Accessor functions for reading and writing values
 	int getNumTables() const 
@@ -537,10 +536,10 @@ public:
 
 	Index(const Index& other) : name(other.name), numTables(other.numTables) 
 	{
-		tables = new Table * [numTables];
+		this->tables = new Table * [numTables];
 		for (int i = 0; i < numTables; ++i) 
 		{
-			tables[i] = new Table(*(other.tables[i]));
+			this->tables[i] = new Table(*(other.tables[i]));
 		}
 	}
 
