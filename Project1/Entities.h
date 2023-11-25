@@ -25,16 +25,36 @@ public:
 		return this->dimension;
 	}
 	void setName(string s) {
-		this->values[0] = s;
+		if(!s.empty())
+			this->values[0] = s;
+		else {
+			string err = "Invalid field";
+			throw(err);
+		}
 	}
 	void setType(string s) {
-		this->values[1] = s;
+		if(s == "integer" || s == "text" || s == "float")
+			this->values[1] = s;
+		else {
+			string err = "Invalid field";
+			throw(err);
+		}
 	}
 	void setDefaultValue(string s) {
-		this->values[2] = s;
+		if(!s.empty())
+			this->values[2] = s;
+		else {
+			string err = "Invalid field";
+			throw(err);
+		}
 	}
 	void setDimension(int d) {
-		this->dimension = d;
+		if(d > 0)
+			this->dimension = d;
+		else {
+			string err = "Invalid field";
+			throw(err);
+		}
 	}
 
 	// Default constructor
@@ -48,6 +68,7 @@ public:
 		setType(type);
 		setDefaultValue(defaultValue);
 	}
+
 	Column(string* values, int dimension) {
 		this->dimension = dimension;
 		if (values == nullptr)
@@ -58,8 +79,6 @@ public:
 				this->values[i] = values[i];
 		}
 	}
-
-
 
 	~Column() {
 		if (values)
@@ -75,7 +94,12 @@ class Record {
 public:
 
 	void setNumValues(int n) {
-		this->numValues = n;
+		if(n < 0)
+			this->numValues = n;
+		else {
+			string err = "Invalid field";
+			throw(err);
+		}
 	}
 	int getNumValues() {
 		return this->numValues;
