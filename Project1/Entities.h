@@ -25,42 +25,16 @@ public:
 		return this->dimension;
 	}
 	void setName(string s) {
-		if (!s.empty())
-			this->values[0] = s;
-		else {
-			string err = "Invalid column name";
-			throw(err);
-		}
+		this->values[0] = s;
 	}
 	void setType(string s) {
-		if (s == "integer" || s == "text" || s == "float")
-			this->values[1] = s;
-		else {
-			string err = "Invalid column type";
-			throw(err);
-		}
+		this->values[1] = s;
 	}
 	void setDefaultValue(string s) {
-		if (!s.empty())
-			this->values[2] = s;
-		else {
-			string err = "Invalid default value";
-			throw(err);
-		}
+		this->values[2] = s;
 	}
 	void setDimension(int d) {
-		if (d > 0)
-			this->dimension = d;
-		else {
-			string err = "Invalid dimension";
-			throw(err);
-		}
-	}
-
-	Column()
-	{
-		this->values = nullptr;
-		this->dimension = 0;
+		this->dimension = d;
 	}
 
 	Column(string name, string type, int dimension, string defaultValue) {
@@ -70,7 +44,6 @@ public:
 		setType(type);
 		setDefaultValue(defaultValue);
 	}
-
 	Column(string* values, int dimension) {
 		this->dimension = dimension;
 		if (values == nullptr)
@@ -93,12 +66,18 @@ public:
 			this->values = nullptr;
 	}
 
+	//destructor
+	~Column() {
+		if (this->values)
+			delete[] this->values;
+		this->values = nullptr;
+	}
 
 	// a function for displaying the column
-	void displayColumn() 
+	void displayColumn()
 	{
-			cout << values[1] << " " << values[2] << " " << values[3] << endl;
-	
+		cout << values[1] << " " << values[2] << " " << values[3] << endl;
+
 	}
 
 	//= overloading
@@ -124,16 +103,9 @@ public:
 		return this->dimension;
 	}
 	//index operator
-	string operator[](int index)
-	{
+	string operator[](int index) {
 		if (values != nullptr && index >= 0 && index < dimension)
 			return values[index];
-	}
-
-	~Column() {
-		if (values)
-			delete[] values;
-		values = nullptr;
 	}
 	//== operator
 	bool operator==(Column c) {
@@ -149,9 +121,106 @@ public:
 			return true;
 		return false;
 	}
+	void setValues(string* values) {
+		if (this->values)
+			delete[] this->values;
+		this->values = new string[dimension];
+		for (int i = 0; i < dimension; i++)
+			this->values[i] = values[i];
+	}
+	string* getValues() {
+		string* copy = nullptr;
+		if (this->values == nullptr)
+			return copy;
+		else {
+			copy = new string[dimension];
+			for (int i = 0; i < dimension; i++)
+				copy[i] = this->values[i];
+		}
+		return copy;
+	}
 
+	//Default constructor
+	Column()
+	{
+		this->dimension = 0;
+		this->values = nullptr;
 
+	}
+
+	void addValue(string a) {
+		if (values) {
+			string* copy = new string[dimension];
+			for (int i = 0; i < dimension; i++)
+				copy[i] = values[i];
+			delete[] values;
+			dimension++;
+			values = new string[dimension];
+			for (int i = 0; i < dimension - 1; i++)
+				values[i] = copy[i];
+			values[dimension - 1] = a;
+			delete[] copy;
+		}
+		else {
+			dimension = 1;
+			values = new string[dimension];
+			values[0] = a;
+		}
+	}
+	// Constructor with values and dimension
+	Column(string* values, int numValues) : dimension(dimension)
+	{
+		setValues(values);
+	}
+
+	Column(int dimension)
+	{
+		setDimension(dimension);
+		this->values = nullptr;
+	}
+
+	//+ operator
+	Column operator+(string a) {
+		Column copy = *this;
+		copy.addValue(a);
+		return copy;
+	}
+	//++ (increment) operators
+	Column& operator++() {
+		this->addValue("");
+		return *this;
+	}
+	Column operator++(int i) {
+		Column copy = *this;
+		this->addValue("");
+		return copy;
+	}
+	//<< and >> operators
+	friend ostream& operator<<(ostream&, Column);
+	friend istream& operator>>(istream&, Column&);
 };
+
+ostream& operator<<(ostream& out, Column c) {
+	for (int i = 0; i < c.dimension; i++) {
+		out << endl << "Value on column " << i + 1 << " : " << c[i];
+	}
+	out << endl;
+	return out;
+}
+
+istream& operator>>(istream& in, Column& c)
+{
+	int i;
+	cout << endl << "Change column";
+	string* buffer = new string[c.dimension];
+	for (i = 0; i < c.dimension; i++) {
+		cout << "Value " << i + 1 << " : ";
+		in >> buffer[i];
+	}
+	c.setValues(buffer);
+	delete[] buffer;
+	return in;
+}
 
 //a class which represents a line from a table
 class Record {
@@ -857,9 +926,144 @@ private:
 };
 
 class DB {
+private:
 	Table* tables;
 	Index* indexes;
 	int numTables;
 	int numIndexes;
-	//need implementations
+	string err = "";
+
+public:
+
+	int getNumTables()
+	{
+		return this->numTables;
+	}
+	int getNumIndexes()
+	{
+		return this->numIndexes;
+	}
+	void setNumTables(int numT)
+	{
+		if (numT < 0)
+		{
+			err = "Invalid argument";
+			throw(err);
+		}
+		else this->numTables = numT;
+	}
+	void setNumIndexes(int numI)
+	{
+		if (numI < 0)
+		{
+			err = "Invalid argument";
+			throw(err);
+		}
+		else this->numIndexes = numI;
+	}
+	//constructors
+	DB(int numTables, int numIndexes)
+	{
+		this->numTables = numTables;
+		this->numIndexes = numIndexes;
+		this->tables = nullptr;
+		this->indexes = nullptr;
+
+	}
+	DB(Table* tables, Index* indexes, int numTables, int numIndexes)
+	{
+		this->tables = new Table[numTables];
+		for (int i = 0; i < this->numTables; ++i)
+			this->tables[i] = tables[i];
+		this->indexes = new Index[numIndexes];
+		for (int j = 0; j < this->numIndexes; ++j)
+			this->indexes[j] = indexes[j];
+
+	}
+	//copy constructor
+	DB(const DB& db)
+	{
+		this->numTables = db.numTables;
+		if (db.numTables)
+		{
+			this->tables = new Table[numTables];
+			for (int i = 0; i < this->numTables; ++i)
+			{
+				this->tables[i] = db.tables[i];
+			}
+		}
+		else
+		{
+			this->tables = nullptr;
+		}
+
+		this->numIndexes = db.numIndexes;
+		if (db.numIndexes)
+		{
+			this->indexes = new Index[numIndexes];
+			for (int j = 0; j < this->numIndexes; ++j)
+			{
+				this->indexes[j] = db.indexes[j];
+			}
+		}
+		else
+		{
+			this->indexes = nullptr;
+		}
+
+	}
+	//destructor
+	~DB()
+	{
+		if (this->tables != nullptr)
+		{
+			delete[] tables;
+			this->tables = nullptr;
+		}
+		if (this->indexes != nullptr)
+		{
+			delete[] indexes;
+			this->indexes = nullptr;
+		}
+	}
+
+	//conditional operator(>=)
+	bool operator>=(DB& db)
+	{
+		return numTables >= db.numTables && numIndexes >= db.numIndexes;
+	}
+
+	//cast operator
+	explicit operator int()
+	{
+		return this->numTables;
+
+	}
+	//index operator
+	Table operator[](int numTables) {
+		if (tables != nullptr && numTables >= 0 && numTables < this->numTables)
+			return tables[numTables];
+	}
+	//== operator
+	bool operator==(DB db) {
+		return (this->numTables == db.numTables);
+	}
+	//< operator
+	bool operator<(int numTables) {
+		return(this->numTables < numTables);
+	}
+	//! operator
+	bool operator!() {
+		if (!this->numIndexes)
+			return true;
+		return false;
+	}
+	//Default constructor
+	DB()
+	{
+		this->numTables = 0;
+		this->numIndexes = 0;
+		this->tables = nullptr;
+		this->indexes = nullptr;
+	}
 };
