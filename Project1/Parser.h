@@ -8,6 +8,7 @@ using namespace std;
 class Parser {
 public:
 	//function for recognizing commands at a superficial level
+	//TO BE REMADE LATER
 	static int superficialParser(string statement)
 	{
 		string err = "";
@@ -34,7 +35,8 @@ public:
 							throw(err);
 					}
 					else if (regexStatements::checkRegex(statement, regexStatements::getCreateTableStatement())) {
-
+						if (!cp.createTableParser(err))
+							throw(err);
 					}
 					else {
 						err = "Create command not properly formatted\nCREATE TABLE table_name [IF NOT EXISTS] ((col_name,col_type,col_size,col_default),...)\nCREATE INDEX [IF NOT EXISTS] index_name ON table_name (column_name)";
@@ -94,6 +96,14 @@ public:
 				else if (cp.getCommandType() == "UPDATE") {
 					//update parser
 					cout << "this is an update command\n";
+					if (regexStatements::checkRegex(statement, regexStatements::getUpdateStatement())) {
+						if (!cp.updateParser(err))
+							throw(err);
+					}
+					else {
+						err = "Update command not properly formatted\nUPDATE table_name SET column_name = value WHERE condition";
+						throw(err);
+					}
 				}
 				else if (cp.getCommandType() == "DELETE") {
 					//delete parser
