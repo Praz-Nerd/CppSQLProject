@@ -4,7 +4,7 @@
 #include "Regex.h"
 #include "commandParser.h"
 using namespace std;
-//a static class with functions for checking and extracting data from a SQL statement
+//a static class with functions for checking a SQL statement
 class Parser {
 public:
 	//function for recognizing commands at a superficial level
@@ -17,6 +17,8 @@ public:
 
 				for (i = 0; (statement[i] != ' ') && (i < statement.length()); i++)
 					commandType.push_back(statement[i]);
+
+				//command parser instantiation
 				commandParser cp(statement, commandType);
 
 				//function calls for each type of command go here
@@ -35,7 +37,7 @@ public:
 
 					}
 					else {
-						err = "Create command noy properly formatted\nCREATE TABLE table_name [IF NOT EXISTS] ((col_name,col_type,col_size,col_default),...)\nCREATE INDEX [IF NOT EXISTS] index_name ON table_name (column_name)";
+						err = "Create command not properly formatted\nCREATE TABLE table_name [IF NOT EXISTS] ((col_name,col_type,col_size,col_default),...)\nCREATE INDEX [IF NOT EXISTS] index_name ON table_name (column_name)";
 						throw(err);
 					}
 				}

@@ -151,13 +151,8 @@ public:
         for (int i = start; i < end; i++)
             string.push_back(s[i]);
         return string;
-        /*if (s.find("WHERE") != string::npos) {
-            int filterLocation = s.find("WHERE") + WHERE_SIZE;
-            for (int i = filterLocation + 1; i < s.length(); i++)
-                filter.push_back(s[i]);
-        }
-        return filter;*/
     }
+
     //functions for individually parsing a command
     int displayParser() {
         string entityName = extractString(this->getCommand(), this->getCommand().find_last_of(' ') + 1, this->getCommand().length());
@@ -315,6 +310,7 @@ public:
         cout << "On table: " << tableName << endl;
         cout << "Column: " << columnName << endl;
 
+        //instantiate index, continue processing
 
         return 1;
 
