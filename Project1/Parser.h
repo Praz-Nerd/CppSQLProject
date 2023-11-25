@@ -27,6 +27,17 @@ public:
 				else if (cp.getCommandType() == "CREATE") {
 					//create parser
 					cout << "this is a create command\n";
+					if (regexStatements::checkRegex(statement, regexStatements::getCreateIndexStatement())) {
+						if (!cp.createIndexParser(err))
+							throw(err);
+					}
+					else if (regexStatements::checkRegex(statement, regexStatements::getCreateTableStatement())) {
+
+					}
+					else {
+						err = "Create command noy properly formatted\nCREATE TABLE table_name [IF NOT EXISTS] ((col_name,col_type,col_size,col_default),...)\nCREATE INDEX [IF NOT EXISTS] index_name ON table_name (column_name)";
+						throw(err);
+					}
 				}
 				else if (cp.getCommandType() == "DROP") {
 					//drop parser

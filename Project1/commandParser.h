@@ -11,6 +11,9 @@ class commandParser {
     const static int INSERT_TABLE_LOCATION = 12;
     const static int FROM_SIZE = 4;
     const static int WHERE_SIZE = 5;
+    const static int INDEX_SIZE = 5;
+    const static int IF_NOT_EXISTS_SIZE = 13;
+    const static int ON_SIZE = 2;
 public:
     void setCommand(string& s) {
         if (!s.empty()) {
@@ -290,6 +293,31 @@ public:
         cout << "Filter column: " << filter << endl;
 
         return 1;
+    }
+
+    int createIndexParser(string& err) {
+        string indexName = "";
+        string tableName = extractString(this->getCommand(), this->getCommand().find("ON")+ON_SIZE+1, this->getCommand().find('(')-1);
+        string columnName = extractString(this->getCommand(), this->getCommand().find('(')+1, this->getCommand().find(')'));
+
+        if (this->getCommand().find("IF NOT EXISTS") != string::npos)
+            indexName = extractString(this->getCommand(), this->getCommand().find("IF NOT EXISTS") + IF_NOT_EXISTS_SIZE + 1, this->getCommand().find("ON") - 1);
+        else
+            indexName = extractString(this->getCommand(), this->getCommand().find("INDEX") + INDEX_SIZE + 1, this->getCommand().find("ON") - 1);
+
+        //this condition is checked in regex pattern
+        /*if (countChars(columnName, ' ') || countChars(columnName, ',')) {
+            err = "Invalid column name";
+            return 0;
+        }*/
+
+        cout << "Index: " << indexName << endl;
+        cout << "On table: " << tableName << endl;
+        cout << "Column: " << columnName << endl;
+
+
+        return 1;
+
     }
 
     ~commandParser() {
