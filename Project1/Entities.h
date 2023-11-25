@@ -25,7 +25,7 @@ public:
 		return this->dimension;
 	}
 	void setName(string s) {
-		if(!s.empty())
+		if (!s.empty())
 			this->values[0] = s;
 		else {
 			string err = "Invalid column name";
@@ -33,7 +33,7 @@ public:
 		}
 	}
 	void setType(string s) {
-		if(s == "integer" || s == "text" || s == "float")
+		if (s == "integer" || s == "text" || s == "float")
 			this->values[1] = s;
 		else {
 			string err = "Invalid column type";
@@ -41,7 +41,7 @@ public:
 		}
 	}
 	void setDefaultValue(string s) {
-		if(!s.empty())
+		if (!s.empty())
 			this->values[2] = s;
 		else {
 			string err = "Invalid default value";
@@ -49,12 +49,18 @@ public:
 		}
 	}
 	void setDimension(int d) {
-		if(d > 0)
+		if (d > 0)
 			this->dimension = d;
 		else {
 			string err = "Invalid dimension";
 			throw(err);
 		}
+	}
+
+	Column()
+	{
+		this->values = nullptr;
+		this->dimension = 0;
 	}
 
 	Column(string name, string type, int dimension, string defaultValue) {
@@ -118,9 +124,12 @@ public:
 		return this->dimension;
 	}
 	//index operator
-	string operator[](int index) {
+	string operator[](int index)
+	{
 		if (values != nullptr && index >= 0 && index < dimension)
 			return values[index];
+	}
+
 	~Column() {
 		if (values)
 			delete[] values;
@@ -351,6 +360,30 @@ public:
 		return numRecords;
 	}
 
+	void setName(const string& newName)
+	{
+		if (newName != "")
+			this->name = newName;
+		else
+			throw exception("Can't have empty space for Index name");
+	}
+
+	void setNumColumns(int numColumns)
+	{
+		if (numColumns <= 0)
+			throw exception("Can't have less than one column");
+		else
+			this->numColumns = numColumns;
+	}
+
+	void setNumRecords(int numRecords)
+	{
+		if (numRecords <= 0)
+			throw exception("Can't have less than one record");
+		else
+			this->numRecords = numRecords;
+	}
+
 	// Generic methods for processing/displaying attributes
 	void displayTableInfo()
 	{
@@ -458,12 +491,12 @@ public:
 	}
 
 	// Mathematical operator +
-	Table operator+(const Table& other)
+	Table operator+(const Table& b)
 	{
 		Table result;
-		result.name = this->name + other.name;
-		result.numColumns = this->numColumns + other.numColumns;
-		result.numRecords = this->numRecords + other.numRecords;
+		result.name = this->name + b.name;
+		result.numColumns = this->numColumns + b.numColumns;
+		result.numRecords = this->numRecords + b.numRecords;
 
 		// Allocate memory for columns and records in the result table
 		result.columns = new Column[result.numColumns];
@@ -475,9 +508,9 @@ public:
 			result.columns[i] = this->columns[i];
 		}
 
-		for (int i = 0; i < other.numColumns; ++i) 
+		for (int i = 0; i < b.numColumns; ++i) 
 		{
-			result.columns[this->numColumns + i] = other.columns[i];
+			result.columns[this->numColumns + i] = b.columns[i];
 		}
 
 		for (int i = 0; i < this->numRecords; ++i) 
@@ -485,9 +518,9 @@ public:
 			result.records[i] = this->records[i];
 		}
 
-		for (int i = 0; i < other.numRecords; ++i) 
+		for (int i = 0; i < b.numRecords; ++i) 
 		{
-			result.records[this->numRecords + i] = other.records[i];
+			result.records[this->numRecords + i] = b.records[i];
 		}
 
 		return result;
@@ -540,30 +573,30 @@ public:
 	}
 
 	// Conditional operators (<, >, <=, >=)
-	bool operator<(const Table& other)
+	bool operator<(const Table& b)
 	{
-		return numColumns < other.numColumns && numRecords < other.numRecords;
+		return numColumns < b.numColumns && numRecords < b.numRecords;
 	}
 
-	bool operator>(const Table& other)
+	bool operator>(const Table& b)
 	{
-		return numColumns > other.numColumns && numRecords > other.numRecords;
+		return numColumns > b.numColumns && numRecords > b.numRecords;
 	}
 
-	bool operator<=(const Table& other)
+	bool operator<=(const Table& b)
 	{
-		return numColumns <= other.numColumns && numRecords <= other.numRecords;
+		return numColumns <= b.numColumns && numRecords <= b.numRecords;
 	}
 
-	bool operator>=(const Table& other)
+	bool operator>=(const Table& b)
 	{
-		return numColumns >= other.numColumns && numRecords >= other.numRecords;
+		return numColumns >= b.numColumns && numRecords >= b.numRecords;
 	}
 
 	// Equality operator ==
-	bool operator==(const Table& other)
+	bool operator==(const Table& b)
 	{
-		return name == other.name && numColumns == other.numColumns && numRecords == other.numRecords;
+		return name == b.name && numColumns == b.numColumns && numRecords == b.numRecords;
 	}
 };
 
@@ -575,31 +608,41 @@ private:
 	string name;
 	Table** tables; // Dynamic array of Table pointers
 	int numTables;
-	int capacity;
 public:
 	// Accessor functions for reading and writing values
-	int getNumTables() const 
+	int getNumTables() const
 	{
 		return numTables;
 	}
 
-	string getName() const 
+	string getName() const
 	{
 		return name;
 	}
 
 	void setName(const string& newName) 
 	{
-		name = newName;
+		if (newName != "")
+			this->name = newName;
+		else
+			throw exception("Can't have empty space for Index name");
+	}
+
+	void setNumtables(int numTables)
+	{
+		if (numTables <= 0)
+			throw exception("Can't have less than one table");
+		else
+			this->numTables = numTables;
 	}
 
 	// Generic methods for processing/displaying attributes
-	void displayIndexInfo() const 
+	void displayIndexInfo()
 	{
 		cout << "Index Name: " << name << ", Number of Tables in Index: " << getNumTables() << endl;
 	}
 
-	void performOperationOnTables() const 
+	void performOperationOnTables()
 	{
 		cout << "Performing an operation on all tables in the index" << endl;
 	}
@@ -608,46 +651,58 @@ public:
 	//Default constructor
 	Index()
 	{
-		this->name = "";
+		this->name = name;
 		this->tables = nullptr;
 		this->numTables = 0;
 	}
 
-	Index(const string& name, Table** tables, int numTables) : name(name), tables(tables), numTables(numTables) {}
-
-	Index(const Index& other) : name(other.name), numTables(other.numTables) 
+	Index(const string& name, Table** tables, int numTables)
 	{
+		this->name = name;
+		this->tables = tables;
+		this->numTables = numTables;
+	}
+
+	Index(const Index& b)
+	{
+		this->name = b.name;
+		this->numTables = b.numTables;
 		this->tables = new Table * [numTables];
 		for (int i = 0; i < numTables; ++i) 
 		{
-			this->tables[i] = new Table(*(other.tables[i]));
+			this->tables[i] = new Table(*(b.tables[i]));
 		}
 	}
 
-	~Index() 
-	{
-		clearTables();
+	~Index() {
+		// Ensure proper cleanup, delete tables if necessary
+		for (int i = 0; i < numTables; ++i) 
+		{
+			delete tables[i];
+		}
+		delete[] tables;
 	}
 
-	Index& operator=(const Index& other) 
+
+	Index& operator=(const Index& b) 
 	{
-		if (this != &other) 
+		if (this != &b) 
 		{
 			clearTables();
 
-			name = other.name;
-			numTables = other.numTables;
+			name = b.name;
+			numTables = b.numTables;
 			tables = new Table * [numTables];
 			for (int i = 0; i < numTables; ++i) 
 			{
-				tables[i] = new Table(*(other.tables[i]));
+				tables[i] = new Table(*(b.tables[i]));
 			}
 		}
 		return *this;
 	}
 
 	// Indexing operator []
-	const Table& operator[](int index) const 
+	const Table& operator[](int index)
 	{
 		if (index >= 0 && index < numTables) 
 		{
@@ -660,10 +715,10 @@ public:
 	}
 
 	// Mathematical operator +
-	Index operator+(const Index& other) const 
+	Index operator+(const Index& b)
 	{
 		Index result;
-		result.numTables = numTables + other.numTables;
+		result.numTables = numTables + b.numTables;
 		result.tables = new Table * [result.numTables];
 
 		for (int i = 0; i < numTables; ++i) 
@@ -671,9 +726,9 @@ public:
 			result.tables[i] = new Table(*(tables[i]));
 		}
 
-		for (int i = 0; i < other.numTables; ++i) 
+		for (int i = 0; i < b.numTables; ++i) 
 		{
-			result.tables[numTables + i] = new Table(*(other.tables[i]));
+			result.tables[numTables + i] = new Table(*(b.tables[i]));
 		}
 
 		return result;
@@ -697,49 +752,49 @@ public:
 	}
 
 	// Cast operator (explicit)
-	explicit operator string() const 
+	explicit operator string()
 	{
 		return "Index with " + to_string(getNumTables()) + " tables";
 	}
 
 	// Negation operator !
-	bool operator!() const 
+	bool operator!() 
 	{
 		return numTables == 0;
 	}
 
 	// Conditional operators (<, >, <=, >=)
-	bool operator<(const Index& other) const 
+	bool operator<(const Index& b)
 	{
-		return getNumTables() < other.getNumTables();
+		return getNumTables() < b.getNumTables();
 	}
 
-	bool operator>(const Index& other) const 
+	bool operator>(const Index& b) 
 	{
-		return getNumTables() > other.getNumTables();
+		return getNumTables() > b.getNumTables();
 	}
 
-	bool operator<=(const Index& other) const 
+	bool operator<=(const Index& b)
 	{
-		return getNumTables() <= other.getNumTables();
+		return getNumTables() <= b.getNumTables();
 	}
 
-	bool operator>=(const Index& other) const 
+	bool operator>=(const Index& b)
 	{
-		return getNumTables() >= other.getNumTables();
+		return getNumTables() >= b.getNumTables();
 	}
 
 	// Equality operator ==
-	bool operator==(const Index& other) const 
+	bool operator==(const Index& b)
 	{
-		if (numTables != other.numTables) 
+		if (numTables != b.numTables) 
 		{
 			return false;
 		}
 
 		for (int i = 0; i < numTables; ++i) 
 		{
-			if (!(*(tables[i]) == *(other.tables[i]))) 
+			if (!(*(tables[i]) == *(b.tables[i]))) 
 			{
 				return false;
 			}
