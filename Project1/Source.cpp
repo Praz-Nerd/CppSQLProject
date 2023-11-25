@@ -25,7 +25,7 @@ int main() {
         Interpreter interpreter(s, ++k);
         interpreter.displayStatement();
         //interpreter.setStatement(s);
-        if (Parser::commandParser(interpreter.getStatement())) {
+        if (Parser::superficialParser(interpreter.getStatement())) {
             cout << "Command ran successfully" << endl;
             //cout << interpreter.getStatement() << endl;
         }

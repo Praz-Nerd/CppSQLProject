@@ -4,9 +4,118 @@
 #include "Entities.h"
 using namespace std;
 class commandParser {
+
+    string* command = nullptr;
+    string commandType = "";
+
     const static int INSERT_TABLE_LOCATION = 12;
     const static int FROM_SIZE = 4;
     const static int WHERE_SIZE = 5;
+public:
+    void setCommand(string& s) {
+        if (!s.empty()) {
+           this->command = new string(s);
+        }
+        else {
+            string err = "Command does not exist";
+            throw (err);
+        }
+    }
+
+    string getCommand() {
+        if (this->command)
+            return *command;
+        else
+            return "";
+    }
+
+    void setCommandType(string s) {
+        if (s == "DISPLAY" || s == "DROP" || s == "INSERT" || s == "SELECT" || s == "DELETE" || s == "UPDATE" || s == "CREATE") {
+            this->commandType = s;
+        }
+        else {
+            string err = "Invalid command type";
+            throw (err);
+        }
+    }
+
+    string getCommandType() {
+        return this->commandType;
+    }
+
+    commandParser(string command, string commandType) {
+       setCommand(command);
+       setCommandType(commandType);
+    }
+
+    commandParser(string* command, string commandType) {
+        setCommand(*command);
+        setCommandType(commandType);
+    }
+
+    commandParser(const commandParser& cp) {
+        this->commandType = cp.commandType;
+        if (cp.command) {
+            this->setCommand(*(cp.command));
+        }
+        else
+            this->command = nullptr;
+    }
+
+    commandParser& operator=(const commandParser& cp) {
+        if (this != &cp) {
+            this->commandType = cp.commandType;
+            if (this->command)
+                delete command;
+            if (cp.command)
+                this->command = new string(*(cp.command));
+            else
+                this->command = nullptr;
+        }
+    }
+
+    explicit operator string() {
+        return *command;
+    }
+
+    char operator[](int index) {
+        if (command != nullptr && index >= 0 && index < command->length()) {
+            return (*command)[index];
+        }
+    }
+
+    bool operator==(commandParser cp) {
+        return commandType == cp.commandType;
+    }
+
+    bool operator<(string s) {
+        return commandType < s;
+    }
+
+    bool operator!() {
+        if (!command)
+            return true;
+        return false;
+    }
+
+    string operator+(string s) {
+        return (*command) + s;
+    }
+
+    commandParser& operator++() {
+        (*command)[command->length() - 1]++;
+        return *this;
+    }
+
+    commandParser operator++(int i) {
+       commandParser copy = *this;
+        (*command)[command->length() - 1]++;
+        return copy;
+    }
+
+    friend ostream& operator<<(ostream&, commandParser);
+    friend istream& operator>>(istream&, commandParser&);
+
     //function for counting the number of appearances of a character from a string, to be used only with other commandParser functions
     static int countChars(string s, char c) {
         int k = 0;
@@ -17,7 +126,7 @@ class commandParser {
         return k;
     }
     //extract strings in a range by the separator, by default is comma, requires string with no spaces
-    static string* extractParameters(string& s, int start, int end, char separator = ',') {
+    static string* extractParameters(string s, int start, int end, char separator = ',') {
         string* values = new string[countChars(s, separator) + 1];
         int currentValue = 0;
         for (int i = start; i < end; i++) {
@@ -33,7 +142,7 @@ class commandParser {
         return values;
     }
     //extract the string between 2 positions
-    static string extractString(string& s, int start, int end) {
+    static string extractString(string s, int start, int end) {
         string string = "";
 
         for (int i = start; i < end; i++)
@@ -46,19 +155,19 @@ class commandParser {
         }
         return filter;*/
     }
-public:
     //functions for individually parsing a command
-    static int displayParser(string& command) {
-        string entityName = extractString(command, command.find_last_of(' ') + 1, command.length());
+    int displayParser() {
+        string entityName = extractString(this->getCommand(), this->getCommand().find_last_of(' ') + 1, this->getCommand().length());
 
         cout << "Table to display: " << entityName << endl;
         return 1;
     }
 
-    static int dropParser(string& command) {
-        string entityName  = extractString(command, command.find_last_of(' ') + 1, command.length());
+    int dropParser() {
+
+        string entityName  = extractString(this->getCommand(), this->getCommand().find_last_of(' ') + 1, this->getCommand().length());
         
-        if (command.find("TABLE")!=string::npos)
+        if (this->getCommand().find("TABLE") != string::npos)
             cout << "Table to drop: ";
         else
             cout << "Index to drop: ";
@@ -66,16 +175,16 @@ public:
         return 1;
     }
 
-    static int selectParser(string& command, string& err)
+    int selectParser(string& err)
     {
         string params;
         bool hasFilter = false;
-        if (command.find("ALL") != string::npos)
+        if (this->getCommand().find("ALL") != string::npos)
             params = "all";
         else {
             //params = extractString(command, command.find_first_of('(') + 1, command.find_last_of(')'));
-            int length = command.find_last_of(')') - command.find_first_of('(') - 1;
-            params = command.substr(command.find_first_of('(') + 1, length);
+            int length = this->getCommand().find_last_of(')') - this->getCommand().find_first_of('(') - 1;
+            params = this->getCommand().substr(this->getCommand().find_first_of('(') + 1, length);
             if (params.find(' ') != string::npos || length <= 0) {
                 err = "Invalid parameter list";
                 return 0;
@@ -83,20 +192,20 @@ public:
         }
 
         //length of the parameters substring from an select command
-        int selectTableLocation = command.find("FROM") + FROM_SIZE;
+        int selectTableLocation = this->getCommand().find("FROM") + FROM_SIZE;
         cout << endl;
         string tableName = "";
-        for (int i = selectTableLocation+1; i < command.length(); i++) {
-            if (command[i] == ' ')
+        for (int i = selectTableLocation+1; i < this->getCommand().length(); i++) {
+            if (this->getCommand()[i] == ' ')
                 break;
-            tableName.push_back(command[i]);
+            tableName.push_back(this->getCommand()[i]);
         }
 
         int filterLocation;
         string filter = "";
-        if (command.find("WHERE") != string::npos) {
-            filterLocation = command.find("WHERE") + WHERE_SIZE;
-            filter = extractString(command, filterLocation + 1, command.length());
+        if (this->getCommand().find("WHERE") != string::npos) {
+            filterLocation = this->getCommand().find("WHERE") + WHERE_SIZE;
+            filter = extractString(this->getCommand(), filterLocation + 1, this->getCommand().length());
             if (countChars(filter, ' ') != 2 || countChars(filter, ',')) {
                 err = "Invalid filter";
                 return 0;
@@ -125,30 +234,15 @@ public:
         return 1;
     }
 
-    static int insertParser(string& command, string& err) {
+    int insertParser(string& err) {
         //length of the parameters substring from an insert command
-        int length = command.find_last_of(')') - command.find_first_of('(') -1;
-        string params = command.substr(command.find_first_of('(')+1, length);
-        //cout << length << endl;
+        int length = this->getCommand().find_last_of(')') - this->getCommand().find_first_of('(') -1;
+        string params = this->getCommand().substr(this->getCommand().find_first_of('(')+1, length);
         //extract table name
         string tableName;
-        for (int i = INSERT_TABLE_LOCATION; command[i] != ' '; i++)
-            tableName.push_back(command[i]);
+        for (int i = INSERT_TABLE_LOCATION; this->getCommand()[i] != ' '; i++)
+            tableName.push_back(this->getCommand()[i]);
 
-        //array of strings, with enough space for the number of values in the insert command
-        /*string* values = new string[countChars(params, ',') + 1];
-        int currentValue = 0;
-        for (int i = 0; i < params.length(); i++) {
-            if (params[i] == ' ') {
-                err = "Invalid parameter list";
-                delete[] values;
-                return 0;
-            }
-            else if (params[i] == ',')
-                currentValue++;
-            else
-            values[currentValue].push_back(params[i]);
-        }*/
         string* values = extractParameters(params, 0, params.length());
 
         if (!values) {
@@ -160,7 +254,6 @@ public:
         //instantiate a record (line of a table) and print to screen
         cout << "\nTable: " << tableName;
         Record r1(values, countChars(params, ',') + 1);
-        //r.displayRecord();
         cout << r1 << endl;
 
         //for testing operators and such
@@ -180,14 +273,14 @@ public:
         return 1;
     }
 
-    static int deleteParser(string& command, string& err) {
-        string tableName = extractString(command, command.find("FROM")+ FROM_SIZE + 1, command.find("WHERE") - 1);
+    int deleteParser(string& err) {
+        string tableName = extractString(this->getCommand(), this->getCommand().find("FROM")+ FROM_SIZE + 1, this->getCommand().find("WHERE") - 1);
 
         int filterLocation;
         string filter = "";
         
-        filterLocation = command.find("WHERE") + WHERE_SIZE;
-        filter = extractString(command, filterLocation + 1, command.length());
+        filterLocation = this->getCommand().find("WHERE") + WHERE_SIZE;
+        filter = extractString(this->getCommand(), filterLocation + 1, this->getCommand().length());
         if (countChars(filter, ' ') != 2 || countChars(filter, ',')) {
             err = "Invalid filter";
             return 0;
@@ -198,4 +291,25 @@ public:
 
         return 1;
     }
+
+    ~commandParser() {
+        if (command)
+            delete command;
+        command = nullptr;
+    }
+
 };
+
+ostream& operator<<(ostream& out, commandParser cp) {
+    out << endl << "Command type: " << cp.commandType;
+    out << endl << "Command: " << *(cp.command);
+    return out;
+}
+
+istream& operator>>(istream& in, commandParser& cp) {
+    string buffer;
+    cout << endl << "Change command";
+    in >> buffer;
+    cp.setCommand(buffer);
+    return in;
+}
