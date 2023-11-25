@@ -25,21 +25,37 @@ public:
 		return this->dimension;
 	}
 	void setName(string s) {
-		this->values[0] = s;
+		if(!s.empty())
+			this->values[0] = s;
+		else {
+			string err = "Invalid column name";
+			throw(err);
+		}
 	}
 	void setType(string s) {
-		this->values[1] = s;
+		if(s == "integer" || s == "text" || s == "float")
+			this->values[1] = s;
+		else {
+			string err = "Invalid column type";
+			throw(err);
+		}
 	}
 	void setDefaultValue(string s) {
-		this->values[2] = s;
+		if(!s.empty())
+			this->values[2] = s;
+		else {
+			string err = "Invalid default value";
+			throw(err);
+		}
 	}
 	void setDimension(int d) {
-		this->dimension = d;
+		if(d > 0)
+			this->dimension = d;
+		else {
+			string err = "Invalid dimension";
+			throw(err);
+		}
 	}
-
-	// Default constructor
-	Column() : values(nullptr), dimension(0) {}
-
 
 	Column(string name, string type, int dimension, string defaultValue) {
 		setDimension(dimension);
@@ -48,6 +64,7 @@ public:
 		setType(type);
 		setDefaultValue(defaultValue);
 	}
+
 	Column(string* values, int dimension) {
 		this->dimension = dimension;
 		if (values == nullptr)
@@ -58,14 +75,73 @@ public:
 				this->values[i] = values[i];
 		}
 	}
+	//copy constructor
+	Column(const Column& c) {
+		this->dimension = c.dimension;
+		if (c.dimension) {
+			this->values = new string[VECTOR_SIZE];
+			for (int i = 0; i < VECTOR_SIZE; i++)
+				this->values[i] = c.values[i];
+		}
+		else
+			this->values = nullptr;
+	}
 
 
+	// a function for displaying the column
+	void displayColumn() 
+	{
+			cout << values[1] << " " << values[2] << " " << values[3] << endl;
+	
+	}
 
+	//= overloading
+	Column& operator=(const Column& c) {
+		if (this != &c) {
+			this->dimension = c.dimension;
+			if (this->values != nullptr) {
+				delete[] this->values;
+			}
+			if (c.values != nullptr) {
+				this->values = new string[VECTOR_SIZE];
+				for (int i = 0; i < VECTOR_SIZE; i++)
+					this->values[i] = c.values[i];
+			}
+			else
+				this->values = nullptr;
+		}
+		return *this;
+	}
+
+	//cast operator
+	explicit operator int() {
+		return this->dimension;
+	}
+	//index operator
+	string operator[](int index) {
+		if (values != nullptr && index >= 0 && index < dimension)
+			return values[index];
 	~Column() {
 		if (values)
 			delete[] values;
 		values = nullptr;
 	}
+	//== operator
+	bool operator==(Column c) {
+		return (this->values[0] == c.values[0]);
+	}
+	//< operator
+	bool operator<(int dimension) {
+		return(this->dimension < dimension);
+	}
+	//! operator
+	bool operator!() {
+		if (!this->dimension)
+			return true;
+		return false;
+	}
+
+
 };
 
 //a class which represents a line from a table
@@ -75,7 +151,12 @@ class Record {
 public:
 
 	void setNumValues(int n) {
-		this->numValues = n;
+		if(n < 0)
+			this->numValues = n;
+		else {
+			string err = "Invalid field";
+			throw(err);
+		}
 	}
 	int getNumValues() {
 		return this->numValues;
@@ -718,4 +799,12 @@ private:
 			numTables = 0;
 		}
 	}
+};
+
+class DB {
+	Table* tables;
+	Index* indexes;
+	int numTables;
+	int numIndexes;
+	//need implementations
 };
