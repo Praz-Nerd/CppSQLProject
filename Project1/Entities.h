@@ -669,8 +669,6 @@ public:
 	}
 };
 
-//implement index class maybe
-
 class Index 
 {
 private:
@@ -752,7 +750,7 @@ public:
 		delete[] tables;
 	}
 
-
+	//Assignment operator =
 	Index& operator=(const Index& b) 
 	{
 		if (this != &b) 
