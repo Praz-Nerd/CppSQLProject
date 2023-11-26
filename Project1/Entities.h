@@ -145,7 +145,6 @@ public:
 	{
 		this->dimension = 0;
 		this->values = nullptr;
-
 	}
 
 	void addValue(string a) {
@@ -167,7 +166,20 @@ public:
 			values[0] = a;
 		}
 	}
-	
+	// Constructor with values and dimension
+	Column(string* values, int numValues) : dimension(dimension)
+	{
+		setValues(values);
+	}
+
+	Column(int dimension)
+	{
+		setDimension(dimension);
+		this->values = nullptr;
+	}
+
+
+
 	//+ operator
 	Column operator+(string a) {
 		Column copy = *this;
@@ -218,7 +230,9 @@ class Record {
 public:
 
 	void setNumValues(int n) {
+
 		if (n < 0)
+
 			this->numValues = n;
 		else {
 			string err = "Invalid field";
@@ -408,6 +422,7 @@ public:
 		return name;
 	}
 
+
 	int getNumColumns()
 	{
 		return numColumns;
@@ -567,6 +582,7 @@ public:
 		}
 
 		for (int i = 0; i < b.numColumns; ++i)
+
 		{
 			result.columns[this->numColumns + i] = b.columns[i];
 		}
@@ -576,7 +592,9 @@ public:
 			result.records[i] = this->records[i];
 		}
 
+
 		for (int i = 0; i < b.numRecords; ++i)
+
 		{
 			result.records[this->numRecords + i] = b.records[i];
 		}
@@ -658,9 +676,9 @@ public:
 	}
 };
 
-//implement index class maybe
 
 class Index
+
 {
 private:
 	string name;
@@ -726,7 +744,9 @@ public:
 		this->name = b.name;
 		this->numTables = b.numTables;
 		this->tables = new Table * [numTables];
+
 		for (int i = 0; i < numTables; ++i)
+
 		{
 			this->tables[i] = new Table(*(b.tables[i]));
 		}
@@ -734,7 +754,9 @@ public:
 
 	~Index() {
 		// Ensure proper cleanup, delete tables if necessary
+
 		for (int i = 0; i < numTables; ++i)
+
 		{
 			delete tables[i];
 		}
@@ -742,9 +764,13 @@ public:
 	}
 
 
+	//Assignment operator =
+
+
 	Index& operator=(const Index& b)
 	{
 		if (this != &b)
+
 		{
 			clearTables();
 
@@ -784,7 +810,9 @@ public:
 			result.tables[i] = new Table(*(tables[i]));
 		}
 
+
 		for (int i = 0; i < b.numTables; ++i)
+
 		{
 			result.tables[numTables + i] = new Table(*(b.tables[i]));
 		}
@@ -816,7 +844,9 @@ public:
 	}
 
 	// Negation operator !
+
 	bool operator!()
+
 	{
 		return numTables == 0;
 	}
@@ -828,6 +858,7 @@ public:
 	}
 
 	bool operator>(const Index& b)
+
 	{
 		return getNumTables() > b.getNumTables();
 	}
@@ -845,14 +876,18 @@ public:
 	// Equality operator ==
 	bool operator==(const Index& b)
 	{
+
 		if (numTables != b.numTables)
+
 		{
 			return false;
 		}
 
 		for (int i = 0; i < numTables; ++i)
 		{
+
 			if (!(*(tables[i]) == *(b.tables[i])))
+
 			{
 				return false;
 			}
@@ -1033,6 +1068,7 @@ public:
 		if (tables != nullptr && numTables >= 0 && numTables < this->numTables)
 			return tables[numTables];
 	}
+
 	//+ operator
 	DB operator+(DB db)
 	{
@@ -1040,6 +1076,7 @@ public:
 
 		return db;
 	}
+
 
 	//== operator
 	bool operator==(DB db) {
@@ -1063,6 +1100,7 @@ public:
 		this->tables = nullptr;
 		this->indexes = nullptr;
 	}
+
 	//= overloading
 	DB& operator=(const DB& db) {
 		if (this != &db) {
@@ -1133,3 +1171,4 @@ istream& operator>>(istream& in, DB& db)
 	db.setNumIndexes(buffer2);
 	return in;
 }
+

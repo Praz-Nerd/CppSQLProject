@@ -14,6 +14,10 @@ class commandParser {
     const static int INDEX_SIZE = 5;
     const static int IF_NOT_EXISTS_SIZE = 13;
     const static int ON_SIZE = 2;
+    const static int UPDATE_SIZE = 6;
+    const static int SET_SIZE = 3;
+    const static int TABLE_SIZE = 5;
+    const static int COLUMN_ATTRIBUTES = 4;
 public:
     void setCommand(string& s) {
         if (!s.empty()) {
@@ -152,7 +156,23 @@ public:
             string.push_back(s[i]);
         return string;
     }
+    //extract an integer from a string with only numbers
+    static int toInt(string& s) {
+        int x = 0;
+        bool isNegative = false;
 
+        for (int i = 0; i < s.length(); i++) {
+            if (i == 0 && s[i] == '-')
+                isNegative = true;
+            else
+                x = x * 10 + (s[i] - '0');
+        }
+
+        if (isNegative)
+            x = x * (-1);
+
+        return x;
+    }
     //functions for individually parsing a command
     int displayParser() {
         string entityName = extractString(this->getCommand(), this->getCommand().find_last_of(' ') + 1, this->getCommand().length());
@@ -204,7 +224,7 @@ public:
         if (this->getCommand().find("WHERE") != string::npos) {
             filterLocation = this->getCommand().find("WHERE") + WHERE_SIZE;
             filter = extractString(this->getCommand(), filterLocation + 1, this->getCommand().length());
-            if (countChars(filter, ' ') != 2 || countChars(filter, ',')) {
+            if (countChars(filter, ' ') > 2 || countChars(filter, ',')) {
                 err = "Invalid filter";
                 return 0;
             }
@@ -271,6 +291,37 @@ public:
         return 1;
     }
 
+    int updateParser(string& err) {
+        string tableName = extractString(this->getCommand(), this->getCommand().find("UPDATE") + UPDATE_SIZE + 1, this->getCommand().find("SET") - 1);
+        string setValue = extractString(this->getCommand(), this->getCommand().find("SET") +SET_SIZE+ 1, this->getCommand().find("WHERE") - 1);
+        string filter = extractString(this->getCommand(), this->getCommand().find("WHERE") + WHERE_SIZE + 1, this->getCommand().length());
+        string columnName, value;
+
+
+        if (countChars(setValue, ' ') > 2 || countChars(setValue, ',')) {
+            err = "Invalid SET clause";
+            return 0;
+        }
+        else {
+            regexStatements::removeSpaces(setValue, "");
+            columnName = extractString(setValue, 0, setValue.find('='));
+            value = extractString(setValue, setValue.find('=') + 1, setValue.length());
+        }
+
+        if (countChars(filter, ' ') > 2 || countChars(filter, ',')) {
+            err = "Invalid WHERE clause";
+            return 0;
+        }
+
+        cout << "Table: " << tableName << endl;
+        cout << "Column to change: " << columnName << endl;
+        cout << "Value: " << value << endl;
+        cout << "Condition: " << filter << endl;
+
+
+        return 1;
+    }
+
     int deleteParser(string& err) {
         string tableName = extractString(this->getCommand(), this->getCommand().find("FROM")+ FROM_SIZE + 1, this->getCommand().find("WHERE") - 1);
 
@@ -279,7 +330,7 @@ public:
         
         filterLocation = this->getCommand().find("WHERE") + WHERE_SIZE;
         filter = extractString(this->getCommand(), filterLocation + 1, this->getCommand().length());
-        if (countChars(filter, ' ') != 2 || countChars(filter, ',')) {
+        if (countChars(filter, ' ') > 2 || countChars(filter, ',')) {
             err = "Invalid filter";
             return 0;
         }
@@ -314,6 +365,70 @@ public:
 
         return 1;
 
+    }
+
+    int createTableParser(string& err) {
+        string tableName;
+        string columns = extractString(this->getCommand(), this->getCommand().find_first_of('(')+1, this->getCommand().find_last_of(')'));
+        //cout << countChars(columns, '(') << endl;
+        if (this->getCommand().find("IF NOT EXISTS") != string::npos)
+            tableName = extractString(this->getCommand(), this->getCommand().find("TABLE") + TABLE_SIZE + 1, this->getCommand().find("IF") - 1);
+        else
+            tableName = extractString(this->getCommand(), this->getCommand().find("TABLE") + TABLE_SIZE + 1, this->getCommand().find_first_of('(') - 1);
+
+        regexStatements::removeSpaces(columns, "");
+        if ((countChars(columns, '(') != countChars(columns, ')'))||columns[0]!='(') {
+            err = "Invalid column list";
+            return 0;
+        }
+
+        /*string** params = new string*[countChars(columns, '(')];
+        for (int i = 0; i < countChars(columns, '('); i++)
+            params[i] = new string[COLUMN_ATTRIBUTES];*/
+        //string* params = new string[COLUMN_ATTRIBUTES * countChars(columns, '(')];
+        //cout << COLUMN_ATTRIBUTES * countChars(columns, '(');
+        int i = columns.find_first_of('('), k = 0;
+        int j = columns.find_first_of(')');
+        string params;
+        for (k = 0; k < countChars(columns, '('); k++) {
+            while (columns[i] != '(')
+                i++;
+            while (columns[j] != ')')
+                j++;
+            string oneColumn = extractString(columns, i + 1, j);
+            if (countChars(oneColumn, ',') != 3) {
+                err = "Invalid column";
+                return 0;
+            }
+            else {
+                params += oneColumn;
+                params += ',';
+                i++;
+                j++;
+            }
+            
+        }
+        params.pop_back();
+        string* values = extractParameters(params, 0, params.length());
+        //cout << params << endl;
+        cout << "Table: " << tableName << endl;
+        k = 1;
+        for (int i = 0; i < COLUMN_ATTRIBUTES*countChars(columns, '('); i+=4) {
+            cout<< endl << "Column " << k << endl;
+            cout << "Table name: " << values[i] << endl;
+            cout << "Type: " << values[i+1] << endl;
+            cout << "Size: " << values[i+2] << endl;
+            cout << "Default values: " << values[i+3] << endl;
+            Column c(values[i], values[i + 1], toInt(values[i+2]), values[i + 3]);
+            k++;
+        }
+           
+
+        //cout << tableName << endl;
+        //cout << columns << endl;
+
+        delete[] values;
+        return 1;
     }
 
     ~commandParser() {
