@@ -398,6 +398,6 @@ FodyWeavers.xsd
 *.sln.iml
 
 # Ignorig some other vs files
-#*.sln
-#*.vcxproj
-#*.vcxproj.filters
+*.sln
+*.vcxproj
+*.vcxproj.filters
