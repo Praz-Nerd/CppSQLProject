@@ -145,7 +145,6 @@ public:
 	{
 		this->dimension = 0;
 		this->values = nullptr;
-
 	}
 
 	void addValue(string a) {
@@ -178,6 +177,8 @@ public:
 		setDimension(dimension);
 		this->values = nullptr;
 	}
+
+
 
 	//+ operator
 	Column operator+(string a) {
@@ -229,7 +230,9 @@ class Record {
 public:
 
 	void setNumValues(int n) {
-		if(n < 0)
+
+		if (n < 0)
+
 			this->numValues = n;
 		else {
 			string err = "Invalid field";
@@ -405,7 +408,7 @@ istream& operator>>(istream& in, Record& r) {
 }
 
 //a class which represents a table
-class Table 
+class Table
 {
 	string name;
 	int numColumns;
@@ -419,7 +422,8 @@ public:
 		return name;
 	}
 
-	int getNumColumns() 
+
+	int getNumColumns()
 	{
 		return numColumns;
 	}
@@ -464,36 +468,36 @@ public:
 		cout << "Performing an operation on the table" << endl;
 	}
 	//Default constructor
-	Table() 
+	Table()
 	{
-		this->numColumns = 0; 
+		this->numColumns = 0;
 		this->numRecords = 0;
 		this->columns = nullptr;
 		this->records = nullptr;
-	} 
+	}
 
 	// Constructor
 	Table(string name, int numColumns, int numRecords, Column* columns, Record* records) :
-		name(name), numColumns(numColumns), numRecords(numRecords) 
+		name(name), numColumns(numColumns), numRecords(numRecords)
 	{
 		this->columns = new Column[numColumns];
 		this->records = new Record[numRecords];
 
 		// Copy columns
-		for (int i = 0; i < numColumns; i++) 
+		for (int i = 0; i < numColumns; i++)
 		{
 			this->columns[i] = columns[i];
 		}
 
 		// Copy records
-		for (int i = 0; i < numRecords; i++) 
+		for (int i = 0; i < numRecords; i++)
 		{
 			this->records[i] = records[i];
 		}
 	}
 
 	// Copy Constructor
-	Table(const Table& table) : name(table.name), numColumns(table.numColumns), numRecords(table.numRecords) 
+	Table(const Table& table) : name(table.name), numColumns(table.numColumns), numRecords(table.numRecords)
 	{
 		this->columns = new Column[numColumns];
 		this->records = new Record[numRecords];
@@ -505,14 +509,14 @@ public:
 		}
 
 		// Copy records
-		for (int i = 0; i < numRecords; i++) 
+		for (int i = 0; i < numRecords; i++)
 		{
 			this->records[i] = table.records[i];
 		}
 	}
 
 	// Destructor
-	~Table() 
+	~Table()
 	{
 		delete[] columns;
 		delete[] records;
@@ -534,14 +538,14 @@ public:
 
 			// Copy columns
 			this->columns = new Column[numColumns];
-			for (int i = 0; i < numColumns; i++) 
+			for (int i = 0; i < numColumns; i++)
 			{
 				this->columns[i] = table.columns[i];
 			}
 
 			// Copy records
 			this->records = new Record[numRecords];
-			for (int i = 0; i < numRecords; i++) 
+			for (int i = 0; i < numRecords; i++)
 			{
 				this->records[i] = table.records[i];
 			}
@@ -550,7 +554,7 @@ public:
 	}
 	// Indexing operator []
 	Column& operator[](int index) {
-		if (index >= 0 && index < numColumns) 
+		if (index >= 0 && index < numColumns)
 		{
 			return columns[index];
 		}
@@ -572,22 +576,25 @@ public:
 		result.records = new Record[result.numRecords];
 
 		// Copy columns and records from both tables to the result table
-		for (int i = 0; i < this->numColumns; ++i) 
+		for (int i = 0; i < this->numColumns; ++i)
 		{
 			result.columns[i] = this->columns[i];
 		}
 
-		for (int i = 0; i < b.numColumns; ++i) 
+		for (int i = 0; i < b.numColumns; ++i)
+
 		{
 			result.columns[this->numColumns + i] = b.columns[i];
 		}
 
-		for (int i = 0; i < this->numRecords; ++i) 
+		for (int i = 0; i < this->numRecords; ++i)
 		{
 			result.records[i] = this->records[i];
 		}
 
-		for (int i = 0; i < b.numRecords; ++i) 
+
+		for (int i = 0; i < b.numRecords; ++i)
+
 		{
 			result.records[this->numRecords + i] = b.records[i];
 		}
@@ -611,7 +618,7 @@ public:
 	}
 
 	// << operator
-	friend ostream& operator<<(ostream& out, const Table& table) 
+	friend ostream& operator<<(ostream& out, const Table& table)
 	{
 		out << "Table: " << table.name << ", Columns: " << table.numColumns << ", Records: " << table.numRecords;
 		return out;
@@ -669,7 +676,9 @@ public:
 	}
 };
 
-class Index 
+
+class Index
+
 {
 private:
 	string name;
@@ -687,7 +696,7 @@ public:
 		return name;
 	}
 
-	void setName(const string& newName) 
+	void setName(const string& newName)
 	{
 		if (newName != "")
 			this->name = newName;
@@ -735,7 +744,9 @@ public:
 		this->name = b.name;
 		this->numTables = b.numTables;
 		this->tables = new Table * [numTables];
-		for (int i = 0; i < numTables; ++i) 
+
+		for (int i = 0; i < numTables; ++i)
+
 		{
 			this->tables[i] = new Table(*(b.tables[i]));
 		}
@@ -743,24 +754,30 @@ public:
 
 	~Index() {
 		// Ensure proper cleanup, delete tables if necessary
-		for (int i = 0; i < numTables; ++i) 
+
+		for (int i = 0; i < numTables; ++i)
+
 		{
 			delete tables[i];
 		}
 		delete[] tables;
 	}
 
+
 	//Assignment operator =
-	Index& operator=(const Index& b) 
+
+
+	Index& operator=(const Index& b)
 	{
-		if (this != &b) 
+		if (this != &b)
+
 		{
 			clearTables();
 
 			name = b.name;
 			numTables = b.numTables;
 			tables = new Table * [numTables];
-			for (int i = 0; i < numTables; ++i) 
+			for (int i = 0; i < numTables; ++i)
 			{
 				tables[i] = new Table(*(b.tables[i]));
 			}
@@ -771,11 +788,11 @@ public:
 	// Indexing operator []
 	const Table& operator[](int index)
 	{
-		if (index >= 0 && index < numTables) 
+		if (index >= 0 && index < numTables)
 		{
 			return *(tables[index]);
 		}
-		else 
+		else
 		{
 			throw out_of_range("Table index out of range");
 		}
@@ -788,12 +805,14 @@ public:
 		result.numTables = numTables + b.numTables;
 		result.tables = new Table * [result.numTables];
 
-		for (int i = 0; i < numTables; ++i) 
+		for (int i = 0; i < numTables; ++i)
 		{
 			result.tables[i] = new Table(*(tables[i]));
 		}
 
-		for (int i = 0; i < b.numTables; ++i) 
+
+		for (int i = 0; i < b.numTables; ++i)
+
 		{
 			result.tables[numTables + i] = new Table(*(b.tables[i]));
 		}
@@ -802,16 +821,16 @@ public:
 	}
 
 	// Increment operators ++
-	Index& operator++() 
+	Index& operator++()
 	{
-		for (int i = 0; i < numTables; ++i) 
+		for (int i = 0; i < numTables; ++i)
 		{
 			++(*(tables[i]));
 		}
 		return *this;
 	}
 
-	Index operator++(int) 
+	Index operator++(int)
 	{
 		Index copy = *this;
 		++(*this);
@@ -825,7 +844,9 @@ public:
 	}
 
 	// Negation operator !
-	bool operator!() 
+
+	bool operator!()
+
 	{
 		return numTables == 0;
 	}
@@ -836,7 +857,8 @@ public:
 		return getNumTables() < b.getNumTables();
 	}
 
-	bool operator>(const Index& b) 
+	bool operator>(const Index& b)
+
 	{
 		return getNumTables() > b.getNumTables();
 	}
@@ -854,14 +876,18 @@ public:
 	// Equality operator ==
 	bool operator==(const Index& b)
 	{
-		if (numTables != b.numTables) 
+
+		if (numTables != b.numTables)
+
 		{
 			return false;
 		}
 
-		for (int i = 0; i < numTables; ++i) 
+		for (int i = 0; i < numTables; ++i)
 		{
-			if (!(*(tables[i]) == *(b.tables[i]))) 
+
+			if (!(*(tables[i]) == *(b.tables[i])))
+
 			{
 				return false;
 			}
@@ -871,10 +897,10 @@ public:
 	}
 
 	// << operator
-	friend ostream& operator<<(ostream& out, const Index& index) 
+	friend ostream& operator<<(ostream& out, const Index& index)
 	{
 		out << "Index Name: " << index.name << ", Number of Tables: " << index.getNumTables() << endl;
-		for (int i = 0; i < index.numTables; ++i) 
+		for (int i = 0; i < index.numTables; ++i)
 		{
 			out << *(index.tables[i]) << endl;
 		}
@@ -882,7 +908,7 @@ public:
 	}
 
 	// >> operator
-	friend istream& operator>>(istream& in, Index& index) 
+	friend istream& operator>>(istream& in, Index& index)
 	{
 		cout << "Enter Index Name: ";
 		in >> index.name;
@@ -896,7 +922,7 @@ public:
 		index.numTables = numTables;
 		index.tables = new Table * [numTables];
 
-		for (int i = 0; i < numTables; ++i) 
+		for (int i = 0; i < numTables; ++i)
 		{
 			index.tables[i] = new Table();
 			cout << "Enter details for Table " << i + 1 << ":" << endl;
@@ -910,9 +936,9 @@ private:
 	// Helper function to clear tables
 	void clearTables()
 	{
-		if (tables != nullptr) 
+		if (tables != nullptr)
 		{
-			for (int i = 0; i < numTables; ++i) 
+			for (int i = 0; i < numTables; ++i)
 			{
 				delete tables[i];
 			}
@@ -1042,6 +1068,16 @@ public:
 		if (tables != nullptr && numTables >= 0 && numTables < this->numTables)
 			return tables[numTables];
 	}
+
+	//+ operator
+	DB operator+(DB db)
+	{
+		db.numTables += numTables; //we are actually working with a copy so we can modify the value
+
+		return db;
+	}
+
+
 	//== operator
 	bool operator==(DB db) {
 		return (this->numTables == db.numTables);
@@ -1064,4 +1100,75 @@ public:
 		this->tables = nullptr;
 		this->indexes = nullptr;
 	}
+
+	//= overloading
+	DB& operator=(const DB& db) {
+		if (this != &db) {
+			this->numTables = db.numTables;
+			if (this->tables != nullptr) {
+				delete[] this->tables;
+			}
+			if (db.tables != nullptr) {
+				this->tables = new Table[numTables];
+				for (int i = 0; i < numTables; i++)
+					this->numTables = db.numTables;
+			}
+			else
+				this->tables = nullptr;
+		}
+		return *this;
+
+		if (this != &db) {
+			this->numIndexes = db.numIndexes;
+			if (this->indexes != nullptr) {
+				delete[] this->indexes;
+			}
+			if (db.indexes != nullptr) {
+				this->indexes = new Index[numIndexes];
+				for (int i = 0; i < numIndexes; i++)
+					this->numIndexes = db.numIndexes;
+			}
+			else
+				this->indexes = nullptr;
+		}
+		return *this;
+	}
+	//pre-incrementaation ++indexes
+	DB& operator++()
+	{
+		this->numIndexes++;
+		return *this;
+	}
+	
+	//post-incrementation indexes++
+	DB operator++(int i)
+	{
+		DB copy = *this;
+		this->numIndexes++;
+		return copy;
+	}
+	
+	//<< and >> operators
+	friend ostream& operator<<(ostream&, DB);
+	friend istream& operator>>(istream&, DB&);
 };
+ostream& operator<<(ostream& out, DB db)
+{
+	out << db.numTables << " " << db.numIndexes << '\n';
+	return out;
+}
+
+istream& operator>>(istream& in, DB& db)
+{
+	cout << "Number of tables: ";
+     int buffer;
+	in >> buffer;
+	db.setNumTables(buffer);
+
+	cout << "Number of Indexes: ";
+	int buffer2;
+	in >> buffer2;
+	db.setNumIndexes(buffer2);
+	return in;
+}
+
