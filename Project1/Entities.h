@@ -167,10 +167,10 @@ public:
 		}
 	}
 	// Constructor with values and dimension
-	Column(string* values, int numValues) : dimension(dimension)
+	/*Column(string* values, int numValues) : dimension(dimension)
 	{
 		setValues(values);
-	}
+	}*/
 
 	Column(int dimension)
 	{
