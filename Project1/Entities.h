@@ -25,16 +25,36 @@ public:
 		return this->dimension;
 	}
 	void setName(string s) {
-		this->values[0] = s;
+		if (!s.empty())
+			this->values[0] = s;
+		else {
+			string err = "Invalid column name";
+			throw(err);
+		}
 	}
 	void setType(string s) {
-		this->values[1] = s;
+		if (s == "integer" || s == "text" || s == "float")
+			this->values[1] = s;
+		else {
+			string err = "Invalid column type";
+			throw(err);
+		}
 	}
 	void setDefaultValue(string s) {
-		this->values[2] = s;
+		if (!s.empty())
+			this->values[2] = s;
+		else {
+			string err = "Invalid default value";
+			throw(err);
+		}
 	}
 	void setDimension(int d) {
-		this->dimension = d;
+		if (d > 0)
+			this->dimension = d;
+		else {
+			string err = "Invalid dimension";
+			throw(err);
+		}
 	}
 
 	Column(string name, string type, int dimension, string defaultValue) {
