@@ -185,7 +185,7 @@ public:
 			values = new string[dimension];
 			values[0] = a;
 		}
-	}
+
 	// Constructor with values and dimension
 	/*Column(string* values, int numValues) : dimension(dimension)
 	{
@@ -197,9 +197,14 @@ public:
 		setDimension(dimension);
 		this->values = nullptr;
 	}
+	*/
 
-
-
+	//- operator
+	Column operator-(string k) {
+		Column copy = *this;
+		copy.addValue(k);
+		return copy;
+		}
 	//+ operator
 	Column operator+(string a) {
 		Column copy = *this;
@@ -1097,6 +1102,11 @@ public:
 		return db;
 	}
 
+	//- operator
+	DB operator-(DB db)
+	{
+		db.numIndexes = numIndexes;
+	}
 
 	//== operator
 	bool operator==(DB db) {
@@ -1159,7 +1169,6 @@ public:
 		this->numIndexes++;
 		return *this;
 	}
-	
 	//post-incrementation indexes++
 	DB operator++(int i)
 	{
