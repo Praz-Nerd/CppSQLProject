@@ -185,47 +185,45 @@ public:
 			values = new string[dimension];
 			values[0] = a;
 		}
-
-	// Constructor with values and dimension
-	/*Column(string* values, int numValues) : dimension(dimension)
-	{
-		setValues(values);
-	}*/
-
-	Column(int dimension)
-	{
-		setDimension(dimension);
-		this->values = nullptr;
 	}
-	*/
+		// Constructor with values and dimension
+		/*Column(string* values, int numValues) : dimension(dimension)
+		{
+			setValues(values);
+		}*/
 
-	//- operator
-	Column operator-(string k) {
-		Column copy = *this;
-		copy.addValue(k);
-		return copy;
+		Column(int dimension)
+		{
+			setDimension(dimension);
+			this->values = nullptr;
 		}
-	//+ operator
-	Column operator+(string a) {
-		Column copy = *this;
-		copy.addValue(a);
-		return copy;
-	}
-	//++ (increment) operators
-	Column& operator++() {
-		this->addValue("");
-		return *this;
-	}
-	Column operator++(int i) {
-		Column copy = *this;
-		this->addValue("");
-		return copy;
-	}
-	//<< and >> operators
-	friend ostream& operator<<(ostream&, Column);
-	friend istream& operator>>(istream&, Column&);
-};
 
+		//- operator
+		Column operator-(string k) {
+			Column copy = *this;
+			copy.addValue(k);
+			return copy;
+		}
+		//+ operator
+		Column operator+(string a) {
+			Column copy = *this;
+			copy.addValue(a);
+			return copy;
+		}
+		//++ (increment) operators
+		Column& operator++() {
+			this->addValue("");
+			return *this;
+		}
+		Column operator++(int i) {
+			Column copy = *this;
+			this->addValue("");
+			return copy;
+		}
+		//<< and >> operators
+		friend ostream& operator<<(ostream&, Column);
+		friend istream& operator>>(istream&, Column&);
+};
 ostream& operator<<(ostream& out, Column c) {
 	for (int i = 0; i < c.dimension; i++) {
 		out << endl << "Value on column " << i + 1 << " : " << c[i];
@@ -1181,6 +1179,7 @@ public:
 	friend ostream& operator<<(ostream&, DB);
 	friend istream& operator>>(istream&, DB&);
 };
+
 ostream& operator<<(ostream& out, DB db)
 {
 	out << db.numTables << " " << db.numIndexes << '\n';
