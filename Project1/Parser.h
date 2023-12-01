@@ -126,6 +126,9 @@ public:
 			cout << err << endl;
 			return 0;
 		}
+		/*catch (...) {
+
+		}*/
 
 		return 1;
 	}
