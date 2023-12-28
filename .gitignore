@@ -401,3 +401,4 @@ FodyWeavers.xsd
 *.sln
 *.vcxproj
 *.vcxproj.filters
+/Project1/cop.txt
