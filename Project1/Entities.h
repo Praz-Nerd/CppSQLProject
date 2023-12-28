@@ -27,7 +27,7 @@ public:
 	void setName(string y) {
 
 		if (y == "text")
-			throw exception("invalid argument");
+			throw exception("invalid name");
 		else
 			this->values[0] = y;
 	}
@@ -35,21 +35,21 @@ public:
 		if (s == "integer" || s == "text" || s == "float")
 			this->values[1] = s;
 		else {
-			throw exception("invalid argument");
+			throw exception("invalid type");
 		}
 	}
 	void setDefaultValue(string s) {
 		if (!s.empty())
 			this->values[2] = s;
 		else {
-			throw exception("invalid argument");
+			throw exception("invalid default value");
 		}
 	}
 	void setDimension(int d) {
 		if (d > 0)
 			this->dimension = d;
 		else {
-			throw exception("invalid argument");
+			throw exception("invalid dimension");
 
 		}
 	}
@@ -249,7 +249,7 @@ public:
 
 			this->numValues = n;
 		else {
-			throw exception("invalid field");
+			throw exception("invalid number of values");
 
 		}
 	}
@@ -847,7 +847,7 @@ public:
 		if (numT != 0)
 		{
 
-			throw exception("invalid argument");
+			throw exception("invalid number of tables");
 		}
 		else this->numTables = numT;
 	}
@@ -855,7 +855,7 @@ public:
 	{
 		if (numI != 0)
 		{
-			throw exception("invalid argument");
+			throw exception("invalid number of indexes");
 		}
 		else this->numIndexes = numI;
 	}
