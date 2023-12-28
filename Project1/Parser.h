@@ -126,10 +126,13 @@ public:
 			cout << err << endl;
 			return 0;
 		}
+		catch (exception e) {
+			cout << e.what() << endl;
+			return 0;
+		}
 		/*catch (...) {
 
 		}*/
-
 		return 1;
 	}
 };
