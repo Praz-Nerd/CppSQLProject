@@ -1,7 +1,9 @@
 #pragma once
 #include <iostream>
+#include <fstream>
 #include "Regex.h"
 #include "Entities.h"
+#include "Files.h"
 using namespace std;
 class commandParser {
 
@@ -24,8 +26,7 @@ public:
            this->command = new string(s);
         }
         else {
-            string err = "Command does not exist";
-            throw (err);
+            throw exception("Command does not exist");
         }
     }
 
@@ -41,8 +42,7 @@ public:
             this->commandType = s;
         }
         else {
-            string err = "Invalid command type";
-            throw (err);
+            throw exception("Invalid command type");
         }
     }
 
@@ -123,7 +123,7 @@ public:
     friend ostream& operator<<(ostream&, commandParser);
     friend istream& operator>>(istream&, commandParser&);
 
-    //function for counting the number of appearances of a character from a string, to be used only with other commandParser functions
+    //function for counting the number of appearances of a character from a string
     static int countChars(string s, char c) {
         int k = 0;
         for (int i = 0; i < s.length(); i++) {
@@ -175,6 +175,7 @@ public:
     }
     //functions for individually parsing a command
     int displayParser() {
+        //extract the table name for displaying
         string entityName = extractString(this->getCommand(), this->getCommand().find_last_of(' ') + 1, this->getCommand().length());
 
         cout << "Table to display: " << entityName << endl;
@@ -182,9 +183,9 @@ public:
     }
 
     int dropParser() {
-
+        //extract the name of the entity to be dropped
         string entityName  = extractString(this->getCommand(), this->getCommand().find_last_of(' ') + 1, this->getCommand().length());
-        
+        //if it's a table or an index
         if (this->getCommand().find("TABLE") != string::npos)
             cout << "Table to drop: ";
         else
@@ -197,6 +198,7 @@ public:
     {
         string params;
         bool hasFilter = false;
+        //extracting column names to be selected (or all)
         if (this->getCommand().find("ALL") != string::npos)
             params = "all";
         else {
@@ -209,22 +211,23 @@ public:
             }
         }
 
-        //length of the parameters substring from an select command
-        int selectTableLocation = this->getCommand().find("FROM") + FROM_SIZE;
+        int selectTableLocation = this->getCommand().find("FROM") + FROM_SIZE; //location of the table name in the select statement
         cout << endl;
         string tableName = "";
+        //save table name in a variable
         for (int i = selectTableLocation+1; i < this->getCommand().length(); i++) {
             if (this->getCommand()[i] == ' ')
                 break;
             tableName.push_back(this->getCommand()[i]);
         }
 
+        //searches for a filter after the WHERE clause
         int filterLocation;
         string filter = "";
         if (this->getCommand().find("WHERE") != string::npos) {
-            filterLocation = this->getCommand().find("WHERE") + WHERE_SIZE;
-            filter = extractString(this->getCommand(), filterLocation + 1, this->getCommand().length());
-            if (countChars(filter, ' ') > 2 || countChars(filter, ',')) {
+            filterLocation = this->getCommand().find("WHERE") + WHERE_SIZE; //location of filter statement in the command
+            filter = extractString(this->getCommand(), filterLocation + 1, this->getCommand().length()); //extract filter
+            if (countChars(filter, ' ') > 2 || countChars(filter, ',')) { //check if filter is valid
                 err = "Invalid filter";
                 return 0;
             }
@@ -232,7 +235,7 @@ public:
             
         if (filter != "")
             hasFilter = true;
-        
+        //display extracted parameters
         cout << "Table: " << tableName << endl;
         if (params != "all")
             cout << "Columns: " << countChars(params, ',') + 1 << endl;
@@ -254,13 +257,16 @@ public:
 
     int insertParser(string& err) {
         //length of the parameters substring from an insert command
+        
         int length = this->getCommand().find_last_of(')') - this->getCommand().find_first_of('(') -1;
+        //the substring between the to paranthesies from an insert statement
         string params = this->getCommand().substr(this->getCommand().find_first_of('(')+1, length);
         //extract table name
         string tableName;
         for (int i = INSERT_TABLE_LOCATION; this->getCommand()[i] != ' '; i++)
             tableName.push_back(this->getCommand()[i]);
 
+        //get an array of strings from parameters
         string* values = extractParameters(params, 0, params.length());
 
         if (!values) {
@@ -292,27 +298,31 @@ public:
     }
 
     int updateParser(string& err) {
+        //extracting table name, the SET clause and the WHERE caluse
         string tableName = extractString(this->getCommand(), this->getCommand().find("UPDATE") + UPDATE_SIZE + 1, this->getCommand().find("SET") - 1);
         string setValue = extractString(this->getCommand(), this->getCommand().find("SET") +SET_SIZE+ 1, this->getCommand().find("WHERE") - 1);
         string filter = extractString(this->getCommand(), this->getCommand().find("WHERE") + WHERE_SIZE + 1, this->getCommand().length());
         string columnName, value;
 
-
+        //checks for good SET clause
         if (countChars(setValue, ' ') > 2 || countChars(setValue, ',')) {
             err = "Invalid SET clause";
             return 0;
         }
         else {
+            //get column and value that get set
             regexStatements::removeSpaces(setValue, "");
             columnName = extractString(setValue, 0, setValue.find('='));
             value = extractString(setValue, setValue.find('=') + 1, setValue.length());
         }
 
+        //checks for good WHERE clause
         if (countChars(filter, ' ') > 2 || countChars(filter, ',')) {
             err = "Invalid WHERE clause";
             return 0;
         }
 
+        //prints to screen
         cout << "Table: " << tableName << endl;
         cout << "Column to change: " << columnName << endl;
         cout << "Value: " << value << endl;
@@ -323,18 +333,20 @@ public:
     }
 
     int deleteParser(string& err) {
+        //extract table name
         string tableName = extractString(this->getCommand(), this->getCommand().find("FROM")+ FROM_SIZE + 1, this->getCommand().find("WHERE") - 1);
 
         int filterLocation;
         string filter = "";
         
+        //filter check
         filterLocation = this->getCommand().find("WHERE") + WHERE_SIZE;
         filter = extractString(this->getCommand(), filterLocation + 1, this->getCommand().length());
         if (countChars(filter, ' ') > 2 || countChars(filter, ',')) {
             err = "Invalid filter";
             return 0;
         }
-        
+        //display to screen
         cout << "Table: " << tableName << endl;
         cout << "Filter column: " << filter << endl;
 
@@ -342,10 +354,12 @@ public:
     }
 
     int createIndexParser(string& err) {
+        //extract index name, table name and column name
         string indexName = "";
         string tableName = extractString(this->getCommand(), this->getCommand().find("ON")+ON_SIZE+1, this->getCommand().find('(')-1);
         string columnName = extractString(this->getCommand(), this->getCommand().find('(')+1, this->getCommand().find(')'));
 
+        //taking into account the IF NOT EXISTS clause when extracting index name
         if (this->getCommand().find("IF NOT EXISTS") != string::npos)
             indexName = extractString(this->getCommand(), this->getCommand().find("IF NOT EXISTS") + IF_NOT_EXISTS_SIZE + 1, this->getCommand().find("ON") - 1);
         else
@@ -368,25 +382,38 @@ public:
     }
 
     int createTableParser(string& err) {
+        //extract table name and columns
         string tableName;
         string columns = extractString(this->getCommand(), this->getCommand().find_first_of('(')+1, this->getCommand().find_last_of(')'));
         //cout << countChars(columns, '(') << endl;
+        //taking into account IF NOT EXISTS clause
         if (this->getCommand().find("IF NOT EXISTS") != string::npos)
             tableName = extractString(this->getCommand(), this->getCommand().find("TABLE") + TABLE_SIZE + 1, this->getCommand().find("IF") - 1);
         else
             tableName = extractString(this->getCommand(), this->getCommand().find("TABLE") + TABLE_SIZE + 1, this->getCommand().find_first_of('(') - 1);
 
+        BinaryFile tableFile(tableName + ".tab");
+        //check existance of table
+        //if there is an IF NOT EXISTS clause, stop
+        //else delete the existent table and record structure
+        if (this->getCommand().find("IF NOT EXISTS") != string::npos && tableFile.exists()) {
+            err = "Table already exists";
+            return 0;
+        }
+        else {
+            tableFile.deleteFile();
+        }
+
+
+        //remove all spaces from the column substring and check validity
         regexStatements::removeSpaces(columns, "");
         if ((countChars(columns, '(') != countChars(columns, ')'))||columns[0]!='(') {
             err = "Invalid column list";
             return 0;
         }
 
-        /*string** params = new string*[countChars(columns, '(')];
-        for (int i = 0; i < countChars(columns, '('); i++)
-            params[i] = new string[COLUMN_ATTRIBUTES];*/
-        //string* params = new string[COLUMN_ATTRIBUTES * countChars(columns, '(')];
-        //cout << COLUMN_ATTRIBUTES * countChars(columns, '(');
+        //remove all paranthesis, get a string with only column parameters and commas, each column gets 3 parameters: name, type, default value
+        //eg: if the statement has 2 columns, then the string obtained in params is going to have 6 word, separated by commas, no spaces
         int i = columns.find_first_of('('), k = 0;
         int j = columns.find_first_of(')');
         string params;
@@ -408,26 +435,42 @@ public:
             }
             
         }
+        //take care of last paranthesis
         params.pop_back();
+        //make an array from the string and a column array
+        int paramNumber = COLUMN_ATTRIBUTES * countChars(columns, '(');
+        int colNumber = paramNumber / 4; //each column has 4 parameters associated
         string* values = extractParameters(params, 0, params.length());
+        Column* columnArray = new Column[colNumber];
         //cout << params << endl;
+        //display all the information
         cout << "Table: " << tableName << endl;
         k = 1;
-        for (int i = 0; i < COLUMN_ATTRIBUTES*countChars(columns, '('); i+=4) {
+        for (int i = 0; i < paramNumber; i+=4) {
             cout<< endl << "Column " << k << endl;
             cout << "Table name: " << values[i] << endl;
             cout << "Type: " << values[i+1] << endl;
             cout << "Size: " << values[i+2] << endl;
             cout << "Default values: " << values[i+3] << endl;
+            //as we only read strings, we need toInt to make the length string into a number
             Column c(values[i], values[i + 1], toInt(values[i+2]), values[i + 3]);
+            columnArray[k - 1] = c;
             k++;
         }
-           
+        
+        Table table(tableName, colNumber, columnArray);
+        table.displayTableInfo();
+
+        //write to file
+        table.writeToBFile(tableFile);
 
         //cout << tableName << endl;
         //cout << columns << endl;
+        //avoid memory leaks
 
+        //execute command, create table file
         delete[] values;
+        delete[] columnArray;
         return 1;
     }
 

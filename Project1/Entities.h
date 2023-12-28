@@ -1,15 +1,14 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include "Files.h"
 using namespace std;
 
 //a class which represents a column definition from a table (data is stored using Records)
 class Column {
 	string* values = nullptr; //name, type, default value
-	//string name;
-	//string type;//integer, text, numeric
+	//integer, text, float
 	int dimension;
-	//string defaultValue;
 	const static int VECTOR_SIZE = 3;
 public:
 	string getName() {
@@ -483,6 +482,17 @@ public:
 		this->records = nullptr;
 	}
 
+	//constructor for a table with no records
+	Table(string name, int numColumns, Column* columns) {
+		this->name = name;
+		this->numColumns = numColumns;
+		this->columns = new Column[numColumns];
+		for (int i = 0; i < numColumns; i++)
+			this->columns[i] = columns[i];
+		this->numRecords = 0;
+		this->records = nullptr;
+	}
+
 	//constructor
 	Table(string name, int numColumns, int numRecords, Column* columns, Record* records) :
 		name(name), numColumns(numColumns), numRecords(numRecords)
@@ -637,6 +647,49 @@ public:
 	{
 		return name == b.name && numColumns == b.numColumns && numRecords == b.numRecords;
 	}
+
+	void writeToBFile(BinaryFile bFile) {
+		ofstream fout = bFile.openToWrite();
+		if (!fout) {
+			cout << "File error\n";
+		}
+		else {
+			//write the table name
+			unsigned length = this->name.length();
+			const char* name = this->name.c_str();
+			fout.write((char*)&length, sizeof(length));
+			fout.write(name, length + 1);
+
+			//write number of columns
+			fout.write((char*)&(this->numColumns), sizeof(this->numColumns));
+
+			//write columns name, type, default value, dimension
+			for (int i = 0; i < this->numColumns; i++) {
+				length = this->columns[i].getName().length();
+				const char* colName = this->columns[i].getName().c_str();
+				fout.write((char*)&length, sizeof(length));
+				fout.write(colName, length + 1);
+
+				length = this->columns[i].getType().length();
+				const char* colType = this->columns[i].getType().c_str();
+				fout.write((char*)&length, sizeof(length));
+				fout.write(colType, length + 1);
+
+				length = this->columns[i].getDefaultValue().length();
+				const char* colDVal = this->columns[i].getDefaultValue().c_str();
+				fout.write((char*)&length, sizeof(length));
+				fout.write(colDVal, length + 1);
+
+				int dim = this->columns[i].getDimension();
+				fout.write((char*)&dim, sizeof(this->columns[i].getDimension()));
+			}
+
+			fout.close();
+			cout << "Table created and written to file\n";
+		}
+	}
+
+
 };
 class Index
 
