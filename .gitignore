@@ -402,3 +402,10 @@ FodyWeavers.xsd
 *.vcxproj
 *.vcxproj.filters
 /Project1/cop.txt
+
+#ignoring files created by program
+*.txt
+*.bin
+*.tab
+*.dat
+*.csv
