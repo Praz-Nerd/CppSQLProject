@@ -171,4 +171,38 @@ public:
 		return 1;
 	}
 	
+	//functions for  executing INSERT,UPDATE, DELETE commands
+	bool executeInsert(string& tableName, string& str2)
+	{
+
+		if (!existTables(tableName) || !correctStructure(tableName, str2)) {
+			cout << "Cannot execute INSERT " << tableName << '\n';
+			return 0;
+
+		}
+		cout << "INSERT is executed " << tableName << '\n';
+		return 1;
+	}
+	bool executeUpdate(string& tableName, string& str2)
+	{
+		if (!existTables(tableName) || !correctStructure(tableName, str2))
+		{
+			cout << "Cannot execute UPDATE " << tableName << '\n';
+			return 0;
+		}
+		cout << "UPDATE is executed " << tableName << '\n';
+		return 1;
+	}
+	bool executeDelete(string& tableName, string& str2)
+	{
+		if (!existTables(tableName) || !correctStructure(tableName, str2))
+		{
+			cout << "Cannot execute DELETE " << tableName << '\n';
+			return 0;
+		}
+		cout << "DELETE is executed " << tableName << '\n';
+		return 1;
+	}
+
+
 };
