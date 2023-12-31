@@ -3,6 +3,7 @@
 #include <string>
 #include "Regex.h"
 #include "commandParser.h"
+#include "Files.h"
 using namespace std;
 //a static class with functions for checking a SQL statement
 class Parser {

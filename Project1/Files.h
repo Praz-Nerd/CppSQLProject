@@ -116,3 +116,40 @@ public:
 	}
 };
 
+class executeCommands {
+private:
+	string tableName = "";
+	const string TABLE_EXTENSION = ".tab";
+public:
+
+	// function for checking the existence of tables
+	bool existTables(string& tableName)
+	{
+		fstream file(tableName + TABLE_EXTENSION);
+		return file.is_open();
+	}
+
+	//function for checking the correct structure
+	bool correctStructure(string& tableName, string& str2)
+	{
+
+		if (!existTables(tableName)) return 0; 
+		fstream file(tableName + TABLE_EXTENSION);
+		if (!file.is_open())
+		{
+			cout << "error for checking the correct structure" << tableName << '\n';
+			return 0;
+		}
+		string str1;
+		getline(file, str1);
+		file.close();
+		if (str1 != str2)
+		{
+			cout << "the structure isn't correct " << tableName << '\n';
+			cout << str2 << " " << str1 << '\n';
+			return 0;
+		}
+
+	}
+
+};
