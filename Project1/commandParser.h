@@ -278,7 +278,6 @@ public:
         //checking if the table exists already and its structure
         if (!checkTable(err))return 0;
 
-
         //length of the parameters substring from an insert command
         int length = this->getCommand().find_last_of(')') - this->getCommand().find_first_of('(') - 1;
         //the substring between the to paranthesies from an insert statement
@@ -319,10 +318,9 @@ public:
         return 1;
     }
 
-    int updateParser(string& err) {
-        //checking if the table exists already and its structure
-        if (!checkTable(err))return 0;
-
+        int updateParser(string & err) {
+            //checking if the table exists already and its structure
+            if (!checkTable(err))return 0;
         //extracting table name, the SET clause and the WHERE caluse
         string tableName = extractString(this->getCommand(), this->getCommand().find("UPDATE") + UPDATE_SIZE + 1, this->getCommand().find("SET") - 1);
         string setValue = extractString(this->getCommand(), this->getCommand().find("SET") +SET_SIZE+ 1, this->getCommand().find("WHERE") - 1);
