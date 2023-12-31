@@ -151,5 +151,24 @@ public:
 		}
 
 	}
-
+	//function for not allowing users to create 2 tables with the same name
+	bool createTable(string& tableName, string& str2)
+	{
+		if (existTables(tableName))
+		{
+			cout << "table exists " << tableName << '\n';
+			return 0;
+		}
+		ofstream file(tableName + TABLE_EXTENSION);
+		if (!file.is_open())
+		{
+			cout << "table was not created " << tableName << '\n';
+			return 0;
+		}
+		file << str2 << '\n';
+		file.close();
+		cout << "table was created " << tableName << '\n';
+		return 1;
+	}
+	
 };
