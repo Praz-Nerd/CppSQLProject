@@ -47,7 +47,8 @@ public:
 					//drop parser
 					cout << "this is a drop command\n";
 					if (regexStatements::checkRegex(statement, regexStatements::getDropStatement())) {
-						cp.dropParser();
+						if (!cp.dropParser(err))
+							throw(err);
 					}
 					else {
 						err = "Drop command not properly formatted\nDROP [TABLE|INDEX] entity_name";
