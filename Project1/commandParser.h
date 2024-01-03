@@ -183,7 +183,7 @@ public:
         return 1;
     }
 
-    int dropParser() {
+    int dropParser(string & err) {
         //extract the name of the entity to be dropped
         string entityName  = extractString(this->getCommand(), this->getCommand().find_last_of(' ') + 1, this->getCommand().length());
         //if it's a table or an index
@@ -192,6 +192,21 @@ public:
         else
             cout << "Index to drop: ";
          cout << entityName << endl;
+
+         if (this->getCommand().find("TABLE") != string::npos) {
+             BinaryFile tableFile(entityName + ".tab");
+             //BinaryFile dataFile(entityName + ".data");
+             if (tableFile.exists()) {
+                 tableFile.deleteFile();
+                 //dataFile.deleteFile();
+                 cout << "Table " << entityName << " was dropped" << endl;
+             }
+             else {
+                 err = "Table does not exist";
+                 return 0;
+             }
+         }
+
         return 1;
     }
 
@@ -394,17 +409,7 @@ public:
             tableName = extractString(this->getCommand(), this->getCommand().find("TABLE") + TABLE_SIZE + 1, this->getCommand().find_first_of('(') - 1);
 
         BinaryFile tableFile(tableName + ".tab");
-        //check existance of table
-        //if there is an IF NOT EXISTS clause, stop
-        //else delete the existent table and record structure
-        if (this->getCommand().find("IF NOT EXISTS") != string::npos && tableFile.exists()) {
-            err = "Table already exists";
-            return 0;
-        }
-        else {
-            tableFile.deleteFile();
-            return 1;
-        }
+
 
 
         //remove all spaces from the column substring and check validity
@@ -437,6 +442,19 @@ public:
             }
             
         }
+
+        //check existance of table
+        //if there is an IF NOT EXISTS clause, stop
+        //else delete the existent table and record structure
+        if (this->getCommand().find("IF NOT EXISTS") != string::npos && tableFile.exists()) {
+            err = "Table already exists";
+            return 0;
+        }
+        else {
+            tableFile.deleteFile();
+        }
+
+
         //take care of last paranthesis
         params.pop_back();
         //make an array from the string and a column array
