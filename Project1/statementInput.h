@@ -14,7 +14,7 @@ class Interpreter {
 	//string err = "";
 public:
 
-	//consttructors
+	//constructors
 	Interpreter(string statement) {
 		regexStatements::removeSpaces(statement);
 		setStatement(statement);
