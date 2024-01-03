@@ -9,8 +9,8 @@ class Column {
 	string* values = nullptr; //name, type, default value
 	//integer, text, float
 	int dimension;
-	const static int VECTOR_SIZE = 3;
 public:
+	const static int VECTOR_SIZE = 3;
 	string getName() {
 		return this->values[0];
 	}
@@ -139,9 +139,14 @@ public:
 	void setValues(string* values) {
 		if (this->values)
 			delete[] this->values;
-		this->values = new string[dimension];
-		for (int i = 0; i < dimension; i++)
+		this->values = new string[VECTOR_SIZE];
+		for (int i = 0; i < VECTOR_SIZE; i++)
 			this->values[i] = values[i];
+	}
+	void setValues() {
+		if (this->values)
+			delete[] this->values;
+		this->values = new string[VECTOR_SIZE];
 	}
 	string* getValues() {
 		string* copy = nullptr;
@@ -437,12 +442,10 @@ public:
 	{
 		return numColumns;
 	}
-
 	int getNumRecords()
 	{
 		return numRecords;
 	}
-
 	void setName(const string& newName)
 	{
 		if (newName != "")
@@ -450,7 +453,6 @@ public:
 		else
 			throw exception("Can't have empty space for Index name");
 	}
-
 	void setNumColumns(int numColumns)
 	{
 		if (numColumns <= 0)
@@ -458,7 +460,6 @@ public:
 		else
 			this->numColumns = numColumns;
 	}
-
 	void setNumRecords(int numRecords)
 	{
 		if (numRecords <= 0)
@@ -466,7 +467,6 @@ public:
 		else
 			this->numRecords = numRecords;
 	}
-
 	// a function for displaying the table
 	void displayTableInfo()
 	{
@@ -480,6 +480,69 @@ public:
 		this->numRecords = 0;
 		this->columns = nullptr;
 		this->records = nullptr;
+	}
+
+	//constructor that takes info about table from binary files
+	Table(string name) {
+		this->name = name;
+		BinaryFile tableFile(name + ".tab");
+		BinaryFile dataFile(name + ".data");
+		if (!tableFile.exists()) {
+			throw exception("No such table exists");
+		}
+		else {
+			ifstream fin = tableFile.openToRead();
+			//read data from file
+			//number of cols, col name, col type, default value, dimension
+			
+			//number of cols
+			int numCols;
+			fin.read((char*)&numCols, sizeof(numCols));
+			this->numColumns = numCols;
+			this->columns = new Column[numCols];
+			
+			for (int i = 0; i < numCols; i++) {
+				columns[i].setValues();
+				unsigned length = 0;
+				char* s;
+				string t;
+				//read column name
+				fin.read((char*)&length, sizeof(length));
+				s = new char[length + 1];
+				fin.read(s, length + 1);
+				t = s;
+				cout << length << endl;
+				cout << s[0] << endl;
+				columns[i].setName(t);
+				delete[] s;
+				//read column type
+				fin.read((char*)&length, sizeof(length));
+				s = new char[length + 1];
+				fin.read(s, length + 1);
+				t = s;
+				columns[i].setType(t);
+				delete[] s;
+				//read default value
+				fin.read((char*)&length, sizeof(length));
+				s = new char[length + 1];
+				t = s;
+				fin.read(s, length + 1);
+				columns[i].setDefaultValue(t);
+				delete[] s;
+				//read dimension
+				int dim;
+				fin.read((char*)&dim, sizeof(dim));
+				columns[i].setDimension(dim);
+			}
+			fin.close();
+		}
+		if (!dataFile.exists()) {
+			this->records = nullptr;
+			this->numRecords = 0;
+		}
+		else {
+			//read the record file
+		}
 	}
 
 	//constructor for a table with no records
@@ -655,10 +718,12 @@ public:
 		}
 		else {
 			//write the table name
-			unsigned length = this->name.length();
+			/*unsigned length = this->name.length();
 			const char* name = this->name.c_str();
 			fout.write((char*)&length, sizeof(length));
-			fout.write(name, length + 1);
+			fout.write(name, length + 1);*/
+			//not really necessary
+			unsigned length;
 
 			//write number of columns
 			fout.write((char*)&(this->numColumns), sizeof(this->numColumns));

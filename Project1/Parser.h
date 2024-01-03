@@ -59,7 +59,8 @@ public:
 					//display parser
 					cout << "this is a display command\n";
 					if (regexStatements::checkRegex(statement, regexStatements::getDisplayStatement())) {
-						cp.displayParser();
+						if (!cp.displayParser(err))
+							throw(err);
 					}
 					else {
 						err = "Display command not properly formatted\nDISPLAY TABLE table_name;";

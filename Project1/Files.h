@@ -78,7 +78,7 @@ class BinaryFile : public File {
 public:
 	//constructor
 	BinaryFile(string fileName) : File(fileName) {
-		string ext[] = { ".bin", ".tab", ".dat" };
+		string ext[] = { ".bin", ".tab", ".data" };
 		if (!this->hasExtention(ext, 3))
 			throw exception("Not a binary file");
 	}
@@ -90,6 +90,10 @@ public:
 	}
 	ofstream openToWrite() {
 		ofstream file(this->fileName, ios::binary);
+		return file;
+	}
+	ofstream openToAppend() {
+		ofstream file(this->fileName, ios::binary | ios::app);
 		return file;
 	}
 };
@@ -104,7 +108,6 @@ public:
 		if (!this->hasExtention(ext, 1))
 			throw exception("Not a CSV file");
 	}
-
 	//funtions for opening the file
 	ifstream openToRead() {
 		ifstream file(this->fileName);

@@ -174,11 +174,22 @@ public:
         return x;
     }
     //functions for individually parsing a command
-    int displayParser() {
+    int displayParser(string& err) {
         //extract the table name for displaying
         string entityName = extractString(this->getCommand(), this->getCommand().find_last_of(' ') + 1, this->getCommand().length());
-
         cout << "Table to display: " << entityName << endl;
+
+        BinaryFile tableFile(entityName + ".tab");
+
+        if (!tableFile.exists()) {
+            err = "Table does not exist";
+            return 0;
+        }
+        else {
+            Table table(entityName);
+            table.displayTableInfo();
+        }
+
         return 1;
     }
 
@@ -237,6 +248,15 @@ public:
         }
 
         //searches for a filter after the WHERE clause
+        //eg WHERE id = 2 string filter  = "id = 2"
+        //bool condition(char operator, int val1, int val2)
+        //bool condition(char operator, float val1, float val2)
+        //maybe
+        // for int i = 0 ; i < table.numberOfRecords ; i++
+        // for int j = 0; j  < table.numberOfColumns; j++
+        // record[i][j]
+        // if tyep = intgerte, float, taext
+        // if(condition(operator, val1, val2 = record[i][j])
         int filterLocation;
         string filter = "";
         if (this->getCommand().find("WHERE") != string::npos) {
@@ -409,8 +429,6 @@ public:
 
         BinaryFile tableFile(tableName + ".tab");
         
-
-
         //remove all spaces from the column substring and check validity
         regexStatements::removeSpaces(columns, "");
         if ((countChars(columns, '(') != countChars(columns, ')'))||columns[0]!='(') {
@@ -479,7 +497,6 @@ public:
         
         Table table(tableName, colNumber, columnArray);
         table.displayTableInfo();
-
         //write to file
         table.writeToBFile(tableFile);
 
