@@ -92,8 +92,7 @@ public:
 	// a function for displaying the column
 	void displayColumn()
 	{
-		cout << values[1] << " " << values[2] << " " << values[3] << endl;
-
+		cout << values[0] << " " << values[1] << " " << values[2] << endl;
 	}
 	//= overloading
 	Column& operator=(const Column& c) {
@@ -471,6 +470,8 @@ public:
 	void displayTableInfo()
 	{
 		cout << "Table Name: " << name << ", Number of Columns: " << numColumns << ", Number of Records: " << numRecords << endl;
+		for (int i = 0; i < numColumns; i++)
+			columns[i].displayColumn();
 	}
 
 	//default constructor
@@ -498,18 +499,18 @@ public:
 			//number of cols
 			int numCols;
 			fin.read((char*)&numCols, sizeof(numCols));
+			cout << numCols << endl;
 			this->numColumns = numCols;
 			this->columns = new Column[numCols];
 			
 			for (int i = 0; i < numCols; i++) {
 				columns[i].setValues();
 				unsigned length = 0;
-				char* s;
 				string t;
 				//read column name
 				fin.read((char*)&length, sizeof(length));
-				s = new char[length + 1];
-				fin.read(s, length + 1);
+				char * s = new char[length + 1];
+				fin.read(s, length+1);
 				t = s;
 				cout << length << endl;
 				cout << s[0] << endl;
@@ -517,6 +518,7 @@ public:
 				delete[] s;
 				//read column type
 				fin.read((char*)&length, sizeof(length));
+				cout << length << endl;
 				s = new char[length + 1];
 				fin.read(s, length + 1);
 				t = s;
@@ -723,30 +725,31 @@ public:
 			fout.write((char*)&length, sizeof(length));
 			fout.write(name, length + 1);*/
 			//not really necessary
-			unsigned length;
+			unsigned length = 0;
 
 			//write number of columns
-			fout.write((char*)&(this->numColumns), sizeof(this->numColumns));
+			fout.write((char*)&(this->numColumns), sizeof(int));
 
 			//write columns name, type, default value, dimension
 			for (int i = 0; i < this->numColumns; i++) {
 				length = this->columns[i].getName().length();
-				const char* colName = this->columns[i].getName().c_str();
+				const char* colName = columns[i].getName().c_str();
 				fout.write((char*)&length, sizeof(length));
 				fout.write(colName, length + 1);
 
 				length = this->columns[i].getType().length();
-				const char* colType = this->columns[i].getType().c_str();
+				const char* colType = columns[i].getType().c_str();
 				fout.write((char*)&length, sizeof(length));
 				fout.write(colType, length + 1);
 
 				length = this->columns[i].getDefaultValue().length();
-				const char* colDVal = this->columns[i].getDefaultValue().c_str();
+				const char* colDVal = columns[i].getDefaultValue().c_str();
 				fout.write((char*)&length, sizeof(length));
 				fout.write(colDVal, length + 1);
 
 				int dim = this->columns[i].getDimension();
-				fout.write((char*)&dim, sizeof(this->columns[i].getDimension()));
+				fout.write((char*)&dim, sizeof(int));
+
 			}
 
 			fout.close();
