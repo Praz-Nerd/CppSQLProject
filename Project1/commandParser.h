@@ -79,6 +79,7 @@ public:
             else
                 this->command = nullptr;
         }
+        return *this;
     }
 
     explicit operator string() {
@@ -270,10 +271,30 @@ public:
         return 1;
     }
 
+    //checking if the table exists and its structure
+    bool checkTable(string& err)
+    {
+        string tableName;
+        executeCommands execute;
+        if (!execute.existTables(tableName))
+        {
+            cout << "The table doesn't exist " << tableName<<'\n';
+            return 0; 
+        }
+        //check the table structure
+        if (!execute.correctStructure(tableName,tableName))
+        {
+            cout << "The table doesn't have a correct structure " << tableName <<'\n';
+            return 0;
+        }
+        return 1;
+    }
     int insertParser(string& err) {
+        //checking if the table exists already and its structure
+        if (!checkTable(err))return 0;
+
         //length of the parameters substring from an insert command
-        
-        int length = this->getCommand().find_last_of(')') - this->getCommand().find_first_of('(') -1;
+        int length = this->getCommand().find_last_of(')') - this->getCommand().find_first_of('(') - 1;
         //the substring between the to paranthesies from an insert statement
         string params = this->getCommand().substr(this->getCommand().find_first_of('(')+1, length);
         //extract table name
@@ -312,7 +333,9 @@ public:
         return 1;
     }
 
-    int updateParser(string& err) {
+        int updateParser(string & err) {
+            //checking if the table exists already and its structure
+            if (!checkTable(err))return 0;
         //extracting table name, the SET clause and the WHERE caluse
         string tableName = extractString(this->getCommand(), this->getCommand().find("UPDATE") + UPDATE_SIZE + 1, this->getCommand().find("SET") - 1);
         string setValue = extractString(this->getCommand(), this->getCommand().find("SET") +SET_SIZE+ 1, this->getCommand().find("WHERE") - 1);
@@ -342,12 +365,12 @@ public:
         cout << "Column to change: " << columnName << endl;
         cout << "Value: " << value << endl;
         cout << "Condition: " << filter << endl;
-
-
         return 1;
     }
 
     int deleteParser(string& err) {
+        //checking if the table exists already and its structure
+        if (!checkTable(err))return 0;
         //extract table name
         string tableName = extractString(this->getCommand(), this->getCommand().find("FROM")+ FROM_SIZE + 1, this->getCommand().find("WHERE") - 1);
 
@@ -400,6 +423,7 @@ public:
         //extract table name and columns
         string tableName;
         string columns = extractString(this->getCommand(), this->getCommand().find_first_of('(')+1, this->getCommand().find_last_of(')'));
+
         //cout << countChars(columns, '(') << endl;
         //taking into account IF NOT EXISTS clause
         if (this->getCommand().find("IF NOT EXISTS") != string::npos)
@@ -408,7 +432,7 @@ public:
             tableName = extractString(this->getCommand(), this->getCommand().find("TABLE") + TABLE_SIZE + 1, this->getCommand().find_first_of('(') - 1);
 
         BinaryFile tableFile(tableName + ".tab");
-        
+
 
 
         //remove all spaces from the column substring and check validity
