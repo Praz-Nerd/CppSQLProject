@@ -497,43 +497,51 @@ public:
 			//number of cols, col name, col type, default value, dimension
 			
 			//number of cols
-			int numCols;
-			fin.read((char*)&numCols, sizeof(numCols));
-			cout << numCols << endl;
+			int numCols = BinaryFile::readInteger(fin);
+			/*fin.read((char*)&numCols, sizeof(numCols));
+			cout << numCols << endl;*/
 			this->numColumns = numCols;
 			this->columns = new Column[numCols];
 			
 			for (int i = 0; i < numCols; i++) {
 				columns[i].setValues();
-				unsigned length = 0;
-				string t;
-				//read column name
-				fin.read((char*)&length, sizeof(length));
-				char * s = new char[length + 1];
-				fin.read(s, length+1);
-				t = s;
-				cout << length << endl;
-				cout << s[0] << endl;
-				columns[i].setName(t);
-				delete[] s;
-				//read column type
-				fin.read((char*)&length, sizeof(length));
-				cout << length << endl;
-				s = new char[length + 1];
-				fin.read(s, length + 1);
-				t = s;
-				columns[i].setType(t);
-				delete[] s;
-				//read default value
-				fin.read((char*)&length, sizeof(length));
-				s = new char[length + 1];
-				t = s;
-				fin.read(s, length + 1);
-				columns[i].setDefaultValue(t);
-				delete[] s;
-				//read dimension
-				int dim;
-				fin.read((char*)&dim, sizeof(dim));
+				//unsigned length = 0;
+				//string t;
+				////read column name
+				//fin.read((char*)&length, sizeof(length));
+				//char * s = new char[length + 1];
+				//fin.read(s, length+1);
+				//t = s;
+				//cout << length << endl;
+				//cout << s[0] << endl;
+				//columns[i].setName(t);
+				//delete[] s;
+				////read column type
+				//fin.read((char*)&length, sizeof(length));
+				//cout << length << endl;
+				//s = new char[length + 1];
+				//fin.read(s, length + 1);
+				//t = s;
+				//columns[i].setType(t);
+				//delete[] s;
+				////read default value
+				//fin.read((char*)&length, sizeof(length));
+				//s = new char[length + 1];
+				//t = s;
+				//fin.read(s, length + 1);
+				//columns[i].setDefaultValue(t);
+				//delete[] s;
+				////read dimension
+				//int dim;
+				//fin.read((char*)&dim, sizeof(dim));
+				//columns[i].setDimension(dim);
+				string colName = BinaryFile::readString(fin);
+				string colType = BinaryFile::readString(fin);
+				string colDVal = BinaryFile::readString(fin);
+				int dim = BinaryFile::readInteger(fin);
+				columns[i].setName(colName);
+				columns[i].setType(colType);
+				columns[i].setDefaultValue(colDVal);
 				columns[i].setDimension(dim);
 			}
 			fin.close();
@@ -728,11 +736,12 @@ public:
 			unsigned length = 0;
 
 			//write number of columns
-			fout.write((char*)&(this->numColumns), sizeof(int));
+			//fout.write((char*)&(this->numColumns), sizeof(int));
+			BinaryFile::writeInteger(fout, this->numColumns);
 
 			//write columns name, type, default value, dimension
 			for (int i = 0; i < this->numColumns; i++) {
-				length = this->columns[i].getName().length();
+				/*length = this->columns[i].getName().length();
 				const char* colName = columns[i].getName().c_str();
 				fout.write((char*)&length, sizeof(length));
 				fout.write(colName, length + 1);
@@ -748,7 +757,11 @@ public:
 				fout.write(colDVal, length + 1);
 
 				int dim = this->columns[i].getDimension();
-				fout.write((char*)&dim, sizeof(int));
+				fout.write((char*)&dim, sizeof(int));*/
+				BinaryFile::writeString(fout, columns[i].getName());
+				BinaryFile::writeString(fout, columns[i].getType());
+				BinaryFile::writeString(fout, columns[i].getDefaultValue());
+				BinaryFile::writeInteger(fout, this->columns[i].getDimension());
 
 			}
 

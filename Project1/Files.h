@@ -76,6 +76,38 @@ public:
 //.bin, .table, .data
 class BinaryFile : public File {
 public:
+	static string readString(ifstream& fin) {
+		unsigned length;
+		//read length of string
+		fin.read((char*)&length, sizeof(length));
+		char* s = new char[length + 1];
+		//read the actual string
+		fin.read(s, length + 1);
+		string sol = s;
+		return sol;
+	}
+	static int readInteger(ifstream& fin) {
+		int x;
+		fin.read((char*)&x, sizeof(x));
+		return x;
+	}
+	static float readFloat(ifstream& fin) {
+		float x;
+		fin.read((char*)&x, sizeof(x));
+		return x;
+	}
+	static void writeString(ofstream& fout, string s) {
+		unsigned length = s.length();
+		const char* n = s.c_str();
+		fout.write((char*)&length, sizeof(length));
+		fout.write(n, length + 1);
+	}
+	static void writeInteger(ofstream& fout, int x) {
+		fout.write((char*)&x, sizeof(x));
+	}
+	static void writeFloat(ofstream& fout, float x) {
+		fout.write((char*)&x, sizeof(x));
+	}
 	//constructor
 	BinaryFile(string fileName) : File(fileName) {
 		string ext[] = { ".bin", ".tab", ".data" };
