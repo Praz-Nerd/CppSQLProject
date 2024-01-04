@@ -486,6 +486,7 @@ public:
 	//constructor that takes info about table from binary files
 	Table(string name) {
 		this->name = name;
+		//define objects for the 2 files that we read from
 		BinaryFile tableFile(name + ".tab");
 		BinaryFile dataFile(name + ".data");
 		if (!tableFile.exists()) {
@@ -502,43 +503,15 @@ public:
 			cout << numCols << endl;*/
 			this->numColumns = numCols;
 			this->columns = new Column[numCols];
-			
 			for (int i = 0; i < numCols; i++) {
+				//allocate memory for dynamic field in every column object
 				columns[i].setValues();
-				//unsigned length = 0;
-				//string t;
-				////read column name
-				//fin.read((char*)&length, sizeof(length));
-				//char * s = new char[length + 1];
-				//fin.read(s, length+1);
-				//t = s;
-				//cout << length << endl;
-				//cout << s[0] << endl;
-				//columns[i].setName(t);
-				//delete[] s;
-				////read column type
-				//fin.read((char*)&length, sizeof(length));
-				//cout << length << endl;
-				//s = new char[length + 1];
-				//fin.read(s, length + 1);
-				//t = s;
-				//columns[i].setType(t);
-				//delete[] s;
-				////read default value
-				//fin.read((char*)&length, sizeof(length));
-				//s = new char[length + 1];
-				//t = s;
-				//fin.read(s, length + 1);
-				//columns[i].setDefaultValue(t);
-				//delete[] s;
-				////read dimension
-				//int dim;
-				//fin.read((char*)&dim, sizeof(dim));
-				//columns[i].setDimension(dim);
+				//static functions that read from file
 				string colName = BinaryFile::readString(fin);
 				string colType = BinaryFile::readString(fin);
 				string colDVal = BinaryFile::readString(fin);
 				int dim = BinaryFile::readInteger(fin);
+				//call setters to assign values
 				columns[i].setName(colName);
 				columns[i].setType(colType);
 				columns[i].setDefaultValue(colDVal);
@@ -546,6 +519,7 @@ public:
 			}
 			fin.close();
 		}
+		//if no data is assigned to the table, then we assign values as such
 		if (!dataFile.exists()) {
 			this->records = nullptr;
 			this->numRecords = 0;
@@ -733,7 +707,6 @@ public:
 			fout.write((char*)&length, sizeof(length));
 			fout.write(name, length + 1);*/
 			//not really necessary
-			unsigned length = 0;
 
 			//write number of columns
 			//fout.write((char*)&(this->numColumns), sizeof(int));
@@ -741,23 +714,7 @@ public:
 
 			//write columns name, type, default value, dimension
 			for (int i = 0; i < this->numColumns; i++) {
-				/*length = this->columns[i].getName().length();
-				const char* colName = columns[i].getName().c_str();
-				fout.write((char*)&length, sizeof(length));
-				fout.write(colName, length + 1);
-
-				length = this->columns[i].getType().length();
-				const char* colType = columns[i].getType().c_str();
-				fout.write((char*)&length, sizeof(length));
-				fout.write(colType, length + 1);
-
-				length = this->columns[i].getDefaultValue().length();
-				const char* colDVal = columns[i].getDefaultValue().c_str();
-				fout.write((char*)&length, sizeof(length));
-				fout.write(colDVal, length + 1);
-
-				int dim = this->columns[i].getDimension();
-				fout.write((char*)&dim, sizeof(int));*/
+				//writing is done in the static functions
 				BinaryFile::writeString(fout, columns[i].getName());
 				BinaryFile::writeString(fout, columns[i].getType());
 				BinaryFile::writeString(fout, columns[i].getDefaultValue());

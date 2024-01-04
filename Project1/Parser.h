@@ -120,6 +120,18 @@ public:
 						throw(err);
 					}
 				}
+				else if (cp.getCommandType() == "IMPORT") {
+					//import parser
+					cout << "this is an import command\n";
+					if (regexStatements::checkRegex(statement, regexStatements::getImportStatement())) {
+						if (!cp.importParser(err))
+							throw(err);
+					}
+					else {
+						err = "Import command not properly formatted\nIMPORT tablename file.csv";
+						throw(err);
+					}
+				}
 				else {
 					err = "Invalid command type";
 					throw(err);

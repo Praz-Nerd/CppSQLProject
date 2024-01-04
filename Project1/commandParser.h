@@ -20,6 +20,8 @@ class commandParser {
     const static int SET_SIZE = 3;
     const static int TABLE_SIZE = 5;
     const static int COLUMN_ATTRIBUTES = 4;
+    static int displayCounter;
+    static int selectCounter;
 public:
     void setCommand(string& s) {
         if (!s.empty()) {
@@ -38,7 +40,7 @@ public:
     }
 
     void setCommandType(string s) {
-        if (s == "DISPLAY" || s == "DROP" || s == "INSERT" || s == "SELECT" || s == "DELETE" || s == "UPDATE" || s == "CREATE") {
+        if (s == "DISPLAY" || s == "DROP" || s == "INSERT" || s == "SELECT" || s == "DELETE" || s == "UPDATE" || s == "CREATE" || s == "IMPORT") {
             this->commandType = s;
         }
         else {
@@ -353,7 +355,7 @@ public:
         return 1;
     }
 
-        int updateParser(string & err) {
+    int updateParser(string & err) {
             //checking if the table exists already and its structure
             if (!checkTable(err))return 0;
         //extracting table name, the SET clause and the WHERE caluse
@@ -533,6 +535,16 @@ public:
         //execute command, create table file
         delete[] values;
         delete[] columnArray;
+        return 1;
+    }
+
+    int importParser(string& err) {
+        //IMPORT table file.csv
+        string tableName = extractString(this->getCommand(), this->getCommand().find_first_of(' ')+1, this->getCommand().find_last_of(' '));
+        string fileName = extractString(this->getCommand(), this->getCommand().find_last_of(' ') + 1, this->getCommand().length());
+        cout << "Table: " << tableName << endl;
+        cout << "File: " << fileName << endl;
+        CSVFile file(fileName);
         return 1;
     }
 

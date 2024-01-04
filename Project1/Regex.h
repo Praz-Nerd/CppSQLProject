@@ -12,6 +12,7 @@ class regexStatements {
     static string selectStatement;
     static string updateStatement;
     static string deleteStatement;
+    static string importStatement;
 public:
     static string getCreateTableStatement() {
         return createTableStatement;
@@ -36,6 +37,9 @@ public:
     }
     static string getDeleteStatement() {
         return deleteStatement;
+    }
+    static string getImportStatement() {
+        return importStatement;
     }
 
     //statically defined regex patterns, for input validation
