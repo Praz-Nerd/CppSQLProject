@@ -227,6 +227,8 @@ public:
     {
         string params;
         bool hasFilter = false;
+        string entityName = extractString(this->getCommand(), this->getCommand().find_last_of(' ') + 1, this->getCommand().length());
+        string filter = extractString(this->getCommand(), this->getCommand().find("WHERE") + WHERE_SIZE + 1, this->getCommand().length());
         //extracting column names to be selected (or all)
         if (this->getCommand().find("ALL") != string::npos)
             params = "all";
@@ -290,6 +292,18 @@ public:
         //    return 0;
         //}
         //delete[] values;
+        if (this->getCommand().find("TABLE") != string::npos) {
+            BinaryFile tableFile(entityName + ".tab");
+            //BinaryFile dataFile(entityName + ".data");
+            if (tableFile.exists()) {
+              
+            }
+            else {
+                err = "Table does not exist";
+                return 0;
+            }
+        }
+
         return 1;
     }
 
