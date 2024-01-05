@@ -9,8 +9,8 @@ class Column {
 	string* values = nullptr; //name, type, default value
 	//integer, text, float
 	int dimension;
-	const static int VECTOR_SIZE = 3;
 public:
+	const static int VECTOR_SIZE = 3;
 	string getName() {
 		return this->values[0];
 	}
@@ -92,8 +92,7 @@ public:
 	// a function for displaying the column
 	void displayColumn()
 	{
-		cout << values[1] << " " << values[2] << " " << values[3] << endl;
-
+		cout << values[0] << " " << values[1] << " " << values[2] << endl;
 	}
 	//= overloading
 	Column& operator=(const Column& c) {
@@ -139,9 +138,14 @@ public:
 	void setValues(string* values) {
 		if (this->values)
 			delete[] this->values;
-		this->values = new string[dimension];
-		for (int i = 0; i < dimension; i++)
+		this->values = new string[VECTOR_SIZE];
+		for (int i = 0; i < VECTOR_SIZE; i++)
 			this->values[i] = values[i];
+	}
+	void setValues() {
+		if (this->values)
+			delete[] this->values;
+		this->values = new string[VECTOR_SIZE];
 	}
 	string* getValues() {
 		string* copy = nullptr;
@@ -437,12 +441,10 @@ public:
 	{
 		return numColumns;
 	}
-
 	int getNumRecords()
 	{
 		return numRecords;
 	}
-
 	void setName(const string& newName)
 	{
 		if (newName != "")
@@ -450,7 +452,6 @@ public:
 		else
 			throw exception("Can't have empty space for Index name");
 	}
-
 	void setNumColumns(int numColumns)
 	{
 		if (numColumns <= 0)
@@ -458,7 +459,6 @@ public:
 		else
 			this->numColumns = numColumns;
 	}
-
 	void setNumRecords(int numRecords)
 	{
 		if (numRecords <= 0)
@@ -466,11 +466,12 @@ public:
 		else
 			this->numRecords = numRecords;
 	}
-
 	// a function for displaying the table
 	void displayTableInfo()
 	{
 		cout << "Table Name: " << name << ", Number of Columns: " << numColumns << ", Number of Records: " << numRecords << endl;
+		for (int i = 0; i < numColumns; i++)
+			columns[i].displayColumn();
 	}
 
 	//default constructor
@@ -480,6 +481,52 @@ public:
 		this->numRecords = 0;
 		this->columns = nullptr;
 		this->records = nullptr;
+	}
+
+	//constructor that takes info about table from binary files
+	Table(string name) {
+		this->name = name;
+		//define objects for the 2 files that we read from
+		BinaryFile tableFile(name + ".tab");
+		BinaryFile dataFile(name + ".data");
+		if (!tableFile.exists()) {
+			throw exception("No such table exists");
+		}
+		else {
+			ifstream fin = tableFile.openToRead();
+			//read data from file
+			//number of cols, col name, col type, default value, dimension
+			
+			//number of cols
+			int numCols = BinaryFile::readInteger(fin);
+			/*fin.read((char*)&numCols, sizeof(numCols));
+			cout << numCols << endl;*/
+			this->numColumns = numCols;
+			this->columns = new Column[numCols];
+			for (int i = 0; i < numCols; i++) {
+				//allocate memory for dynamic field in every column object
+				columns[i].setValues();
+				//static functions that read from file
+				string colName = BinaryFile::readString(fin);
+				string colType = BinaryFile::readString(fin);
+				string colDVal = BinaryFile::readString(fin);
+				int dim = BinaryFile::readInteger(fin);
+				//call setters to assign values
+				columns[i].setName(colName);
+				columns[i].setType(colType);
+				columns[i].setDefaultValue(colDVal);
+				columns[i].setDimension(dim);
+			}
+			fin.close();
+		}
+		//if no data is assigned to the table, then we assign values as such
+		if (!dataFile.exists()) {
+			this->records = nullptr;
+			this->numRecords = 0;
+		}
+		else {
+			//read the record file
+		}
 	}
 
 	//constructor for a table with no records
@@ -655,33 +702,24 @@ public:
 		}
 		else {
 			//write the table name
-			unsigned length = this->name.length();
+			/*unsigned length = this->name.length();
 			const char* name = this->name.c_str();
 			fout.write((char*)&length, sizeof(length));
-			fout.write(name, length + 1);
+			fout.write(name, length + 1);*/
+			//not really necessary
 
 			//write number of columns
-			fout.write((char*)&(this->numColumns), sizeof(this->numColumns));
+			//fout.write((char*)&(this->numColumns), sizeof(int));
+			BinaryFile::writeInteger(fout, this->numColumns);
 
 			//write columns name, type, default value, dimension
 			for (int i = 0; i < this->numColumns; i++) {
-				length = this->columns[i].getName().length();
-				const char* colName = this->columns[i].getName().c_str();
-				fout.write((char*)&length, sizeof(length));
-				fout.write(colName, length + 1);
+				//writing is done in the static functions
+				BinaryFile::writeString(fout, columns[i].getName());
+				BinaryFile::writeString(fout, columns[i].getType());
+				BinaryFile::writeString(fout, columns[i].getDefaultValue());
+				BinaryFile::writeInteger(fout, this->columns[i].getDimension());
 
-				length = this->columns[i].getType().length();
-				const char* colType = this->columns[i].getType().c_str();
-				fout.write((char*)&length, sizeof(length));
-				fout.write(colType, length + 1);
-
-				length = this->columns[i].getDefaultValue().length();
-				const char* colDVal = this->columns[i].getDefaultValue().c_str();
-				fout.write((char*)&length, sizeof(length));
-				fout.write(colDVal, length + 1);
-
-				int dim = this->columns[i].getDimension();
-				fout.write((char*)&dim, sizeof(this->columns[i].getDimension()));
 			}
 
 			fout.close();

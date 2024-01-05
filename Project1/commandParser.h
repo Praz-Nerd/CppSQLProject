@@ -20,6 +20,8 @@ class commandParser {
     const static int SET_SIZE = 3;
     const static int TABLE_SIZE = 5;
     const static int COLUMN_ATTRIBUTES = 4;
+    static int displayCounter;
+    static int selectCounter;
 public:
     void setCommand(string& s) {
         if (!s.empty()) {
@@ -38,7 +40,7 @@ public:
     }
 
     void setCommandType(string s) {
-        if (s == "DISPLAY" || s == "DROP" || s == "INSERT" || s == "SELECT" || s == "DELETE" || s == "UPDATE" || s == "CREATE") {
+        if (s == "DISPLAY" || s == "DROP" || s == "INSERT" || s == "SELECT" || s == "DELETE" || s == "UPDATE" || s == "CREATE" || s == "IMPORT") {
             this->commandType = s;
         }
         else {
@@ -79,6 +81,7 @@ public:
             else
                 this->command = nullptr;
         }
+        return *this;
     }
 
     explicit operator string() {
@@ -174,15 +177,26 @@ public:
         return x;
     }
     //functions for individually parsing a command
-    int displayParser() {
+    int displayParser(string& err) {
         //extract the table name for displaying
         string entityName = extractString(this->getCommand(), this->getCommand().find_last_of(' ') + 1, this->getCommand().length());
-
         cout << "Table to display: " << entityName << endl;
+
+        BinaryFile tableFile(entityName + ".tab");
+
+        if (!tableFile.exists()) {
+            err = "Table does not exist";
+            return 0;
+        }
+        else {
+            Table table(entityName);
+            table.displayTableInfo();
+        }
+
         return 1;
     }
 
-    int dropParser() {
+    int dropParser(string & err) {
         //extract the name of the entity to be dropped
         string entityName  = extractString(this->getCommand(), this->getCommand().find_last_of(' ') + 1, this->getCommand().length());
         //if it's a table or an index
@@ -191,6 +205,21 @@ public:
         else
             cout << "Index to drop: ";
          cout << entityName << endl;
+
+         if (this->getCommand().find("TABLE") != string::npos) {
+             BinaryFile tableFile(entityName + ".tab");
+             //BinaryFile dataFile(entityName + ".data");
+             if (tableFile.exists()) {
+                 tableFile.deleteFile();
+                 //dataFile.deleteFile();
+                 cout << "Table " << entityName << " was dropped" << endl;
+             }
+             else {
+                 err = "Table does not exist";
+                 return 0;
+             }
+         }
+
         return 1;
     }
 
@@ -222,6 +251,15 @@ public:
         }
 
         //searches for a filter after the WHERE clause
+        //eg WHERE id = 2 string filter  = "id = 2"
+        //bool condition(char operator, int val1, int val2)
+        //bool condition(char operator, float val1, float val2)
+        //maybe
+        // for int i = 0 ; i < table.numberOfRecords ; i++
+        // for int j = 0; j  < table.numberOfColumns; j++
+        // record[i][j]
+        // if tyep = intgerte, float, taext
+        // if(condition(operator, val1, val2 = record[i][j])
         int filterLocation;
         string filter = "";
         if (this->getCommand().find("WHERE") != string::npos) {
@@ -255,10 +293,30 @@ public:
         return 1;
     }
 
+    //checking if the table exists and its structure
+    bool checkTable(string& err)
+    {
+        string tableName;
+        executeCommands execute;
+        if (!execute.existTables(tableName))
+        {
+            cout << "The table doesn't exist " << tableName<<'\n';
+            return 0; 
+        }
+        //check the table structure
+        if (!execute.correctStructure(tableName,tableName))
+        {
+            cout << "The table doesn't have a correct structure " << tableName <<'\n';
+            return 0;
+        }
+        return 1;
+    }
     int insertParser(string& err) {
+        //checking if the table exists already and its structure
+        if (!checkTable(err))return 0;
+
         //length of the parameters substring from an insert command
-        
-        int length = this->getCommand().find_last_of(')') - this->getCommand().find_first_of('(') -1;
+        int length = this->getCommand().find_last_of(')') - this->getCommand().find_first_of('(') - 1;
         //the substring between the to paranthesies from an insert statement
         string params = this->getCommand().substr(this->getCommand().find_first_of('(')+1, length);
         //extract table name
@@ -297,7 +355,9 @@ public:
         return 1;
     }
 
-    int updateParser(string& err) {
+    int updateParser(string & err) {
+            //checking if the table exists already and its structure
+            if (!checkTable(err))return 0;
         //extracting table name, the SET clause and the WHERE caluse
         string tableName = extractString(this->getCommand(), this->getCommand().find("UPDATE") + UPDATE_SIZE + 1, this->getCommand().find("SET") - 1);
         string setValue = extractString(this->getCommand(), this->getCommand().find("SET") +SET_SIZE+ 1, this->getCommand().find("WHERE") - 1);
@@ -327,12 +387,12 @@ public:
         cout << "Column to change: " << columnName << endl;
         cout << "Value: " << value << endl;
         cout << "Condition: " << filter << endl;
-
-
         return 1;
     }
 
     int deleteParser(string& err) {
+        //checking if the table exists already and its structure
+        if (!checkTable(err))return 0;
         //extract table name
         string tableName = extractString(this->getCommand(), this->getCommand().find("FROM")+ FROM_SIZE + 1, this->getCommand().find("WHERE") - 1);
 
@@ -385,6 +445,7 @@ public:
         //extract table name and columns
         string tableName;
         string columns = extractString(this->getCommand(), this->getCommand().find_first_of('(')+1, this->getCommand().find_last_of(')'));
+
         //cout << countChars(columns, '(') << endl;
         //taking into account IF NOT EXISTS clause
         if (this->getCommand().find("IF NOT EXISTS") != string::npos)
@@ -393,16 +454,7 @@ public:
             tableName = extractString(this->getCommand(), this->getCommand().find("TABLE") + TABLE_SIZE + 1, this->getCommand().find_first_of('(') - 1);
 
         BinaryFile tableFile(tableName + ".tab");
-        //check existance of table
-        //if there is an IF NOT EXISTS clause, stop
-        //else delete the existent table and record structure
-        if (this->getCommand().find("IF NOT EXISTS") != string::npos && tableFile.exists()) {
-            err = "Table already exists";
-            return 0;
-        }
-        else {
-            tableFile.deleteFile();
-        }
+        
 
 
         //remove all spaces from the column substring and check validity
@@ -435,6 +487,19 @@ public:
             }
             
         }
+
+        //check existance of table
+        //if there is an IF NOT EXISTS clause, stop
+        //else delete the existent table and record structure
+        if (this->getCommand().find("IF NOT EXISTS") != string::npos && tableFile.exists()) {
+            err = "Table already exists";
+            return 0;
+        }
+        else {
+            tableFile.deleteFile();
+        }
+
+
         //take care of last paranthesis
         params.pop_back();
         //make an array from the string and a column array
@@ -460,7 +525,6 @@ public:
         
         Table table(tableName, colNumber, columnArray);
         table.displayTableInfo();
-
         //write to file
         table.writeToBFile(tableFile);
 
@@ -471,6 +535,16 @@ public:
         //execute command, create table file
         delete[] values;
         delete[] columnArray;
+        return 1;
+    }
+
+    int importParser(string& err) {
+        //IMPORT table file.csv
+        string tableName = extractString(this->getCommand(), this->getCommand().find_first_of(' ')+1, this->getCommand().find_last_of(' '));
+        string fileName = extractString(this->getCommand(), this->getCommand().find_last_of(' ') + 1, this->getCommand().length());
+        cout << "Table: " << tableName << endl;
+        cout << "File: " << fileName << endl;
+        CSVFile file(fileName);
         return 1;
     }
 
