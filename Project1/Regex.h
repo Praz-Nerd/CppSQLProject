@@ -61,7 +61,8 @@ public:
         return regex_match(s, floatRegex);
     }
     static bool isText(string& s) {
-        regex textRegex("^[A-Za-z]+$");
+        //begins and end with single quote
+        regex textRegex("^'[^']*'$");
         return regex_match(s, textRegex);
     }
     //function that removes spaces, by default replaces them with one space

@@ -272,8 +272,7 @@ public:
 
 	void setNumValues(int n) {
 
-		if (n < 0)
-
+		if (n > 0)
 			this->numValues = n;
 		else {
 			throw exception("invalid number of values");
@@ -294,7 +293,7 @@ public:
 	void setValues(int size) {
 		if (this->values)
 			delete[] this->values;
-		this->values = new string[numValues];
+		this->values = new string[size];
 	}
 	string* getValues() {
 		string* copy = nullptr;
@@ -527,6 +526,10 @@ public:
 				records[i].displayRecord();
 		}
 	}
+	//function for incrementing number of records
+	void incrementNumRecords() {
+		this->numRecords++;
+	}
 
 	//a funtion for checking table structure against a record
 	bool checkRecord(Record& r, string& err) {
@@ -584,11 +587,13 @@ public:
 			//read data from file
 			//number of cols, col name, col type, default value, dimension
 			
-			//number of cols
+			//number of cols and records
 			int numCols = BinaryFile::readInteger(fin);
+			int numRecs = BinaryFile::readInteger(fin);
 			/*fin.read((char*)&numCols, sizeof(numCols));
 			cout << numCols << endl;*/
 			this->numColumns = numCols;
+			this->numRecords = numRecs;
 			this->columns = new Column[numCols];
 			for (int i = 0; i < numCols; i++) {
 				columns[i].readColumn(fin);
@@ -606,18 +611,19 @@ public:
 			//read data from record file
 			//read how many records there are
 			//only string types
-			int numRecs = BinaryFile::readInteger(fin);
-			this->numRecords = numRecs;
-			this->records = new Record[numRecs];
+			/*int numRecs = BinaryFile::readInteger(fin);
+			this->numRecords = numRecs;*/
+			this->records = new Record[this->numRecords];
 
-			for (int i = 0; i < numRecs; i++) {
-				records[i].setValues(this->numColumns);
-				records[i].setNumValues(this->numColumns);
-				for (int j = 0; j < this->numColumns; j++) {
-					string val = BinaryFile::readString(fin);
-					//i-th record j-th position in record
-					records[i][j] = val;
-				}
+			for (int i = 0; i < this->numRecords; i++) {
+				//records[i].setValues(this->numColumns);
+				//records[i].setNumValues(this->numColumns);
+				//for (int j = 0; j < this->numColumns; j++) {
+				//	string val = BinaryFile::readString(fin);
+				//	//i-th record j-th position in record
+				//	records[i][j] = val;
+				//}
+				records[i].readRecord(fin, this->numColumns);
 			}
 			fin.close();
 		}
@@ -795,9 +801,9 @@ public:
 			cout << "File error\n";
 		}
 		else {
-			
+			//write num of coumns and num of records
 			BinaryFile::writeInteger(fout, this->numColumns);
-
+			BinaryFile::writeInteger(fout, this->numRecords);
 			//write columns name, type, default value, dimension
 			for (int i = 0; i < this->numColumns; i++) {
 				//writing is done in the static functions

@@ -313,7 +313,7 @@ public:
     }
     int insertParser(string& err) {
         //checking if the table exists already and its structure
-        if (!checkTable(err))return 0;
+        //if (!checkTable(err))return 0; ???
 
         //length of the parameters substring from an insert command
         int length = this->getCommand().find_last_of(')') - this->getCommand().find_first_of('(') - 1;
@@ -349,10 +349,29 @@ public:
             //read table structure
             Table table(tableName);
             //check record if it works with table structure
+            if (!table.checkRecord(r1, err))
+                return 0;
+            else {
+                //write record to file
+                // .data file stores records
+                BinaryFile dataFile(tableName + ".data");
+                //increment number of records
+                table.incrementNumRecords();
+                //if exists, append to file, else create file
+                if (!dataFile.exists()) {
+                    ofstream fout = dataFile.openToWrite();
+                    r1.writeRecord(fout);
+                    fout.close();
+                }
+                else {
+                    ofstream fout = dataFile.openToAppend();
+                    r1.writeRecord(fout);
+                    fout.close();
+                }
+                //rewrite table structure
+                table.writeToBFile(tableFile);
+            }
         }
-
-        
-        
         return 1;
     }
 
@@ -498,6 +517,8 @@ public:
         }
         else {
             tableFile.deleteFile();
+            BinaryFile dataFile(tableName + ".data");
+            dataFile.deleteFile();
         }
 
 
