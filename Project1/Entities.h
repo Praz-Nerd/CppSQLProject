@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include "Files.h"
+#include "Regex.h"
 using namespace std;
 
 //a class which represents a column definition from a table (data is stored using Records)
@@ -51,6 +52,28 @@ public:
 			throw exception("invalid dimension");
 
 		}
+	}
+	//write column to binary file
+	void writeColumn(ofstream& fout) {
+		BinaryFile::writeString(fout, this->getName());
+		BinaryFile::writeString(fout,this->getType());
+		BinaryFile::writeString(fout, this->getDefaultValue());
+		BinaryFile::writeInteger(fout, this->getDimension());
+	}
+	//read column from binary file
+	void readColumn(ifstream& fin) {
+		//allocate memory for dynamic field in every column object
+		this->setValues();
+		//static functions that read from file
+		string colName = BinaryFile::readString(fin);
+		string colType = BinaryFile::readString(fin);
+		string colDVal = BinaryFile::readString(fin);
+		int dim = BinaryFile::readInteger(fin);
+		//call setters to assign values
+		this->setName(colName);
+		this->setType(colType);
+		this->setDefaultValue(colDVal);
+		this->setDimension(dim);
 	}
 
 	Column(string name, string type, int dimension, string defaultValue) {
@@ -142,6 +165,7 @@ public:
 		for (int i = 0; i < VECTOR_SIZE; i++)
 			this->values[i] = values[i];
 	}
+	//initialize dynamic array, no values
 	void setValues() {
 		if (this->values)
 			delete[] this->values;
@@ -266,6 +290,12 @@ public:
 		for (int i = 0; i < numValues; i++)
 			this->values[i] = values[i];
 	}
+	//initialize dynamic array, no values
+	void setValues(int size) {
+		if (this->values)
+			delete[] this->values;
+		this->values = new string[numValues];
+	}
 	string* getValues() {
 		string* copy = nullptr;
 		if (this->values == nullptr)
@@ -276,6 +306,24 @@ public:
 				copy[i] = this->values[i];
 		}
 		return copy;
+	}
+
+
+
+	//read record from file
+	void readRecord(ifstream& fin, int numCols) {
+		this->setValues(numCols);
+		this->setNumValues(numCols);
+		for (int j = 0; j < numCols; j++) {
+			string val = BinaryFile::readString(fin);
+			//j-th position in record
+			values[j] = val;
+		}
+	}
+	//write record to file
+	void writeRecord(ofstream& fout) {
+		for (int i = 0; i < this->numValues; i++)
+			BinaryFile::writeString(fout, this->values[i]);
 	}
 	//constructors
 
@@ -361,8 +409,8 @@ public:
 	explicit operator int() {
 		return this->numValues;
 	}
-	//index operator
-	string operator[](int index) {
+	//index operator also to modify
+	string& operator[](int index) {
 		if (values != nullptr && index >= 0 && index < numValues)
 			return values[index];
 	}
@@ -472,6 +520,45 @@ public:
 		cout << "Table Name: " << name << ", Number of Columns: " << numColumns << ", Number of Records: " << numRecords << endl;
 		for (int i = 0; i < numColumns; i++)
 			columns[i].displayColumn();
+		if (this->records == nullptr)
+			cout << "No records to show\n";
+		else {
+			for (int i = 0; i < numRecords; i++)
+				records[i].displayRecord();
+		}
+	}
+
+	//a funtion for checking table structure against a record
+	bool checkRecord(Record& r, string& err) {
+		//check size
+		if (this->numColumns != r.getNumValues()) {
+			if (this->numColumns > r.getNumValues())
+				err = "Not enough values given";
+			else
+				err = "Too many values given";
+			return false;
+		}
+		//check data integrity
+		//dimension, and type: integer, float, text
+		for (int i = 0; i < this->numColumns; i++) {
+			if (r[i].length() > this->columns[i].getDimension()) {
+				err = "Value " + r[i] + " too big";
+				return false;
+			}
+			if (this->columns[i].getType() == "integer" && (!regexStatements::isInteger(r[i]))) {
+				err = "Value " + r[i] + " expected integer";
+				return false;
+			}
+			if (this->columns[i].getType() == "float" && (!regexStatements::isFloat(r[i]))) {
+				err = "Value " + r[i] + " expected float";
+				return false;
+			}
+			if (this->columns[i].getType() == "text" && (!regexStatements::isText(r[i]))) {
+				err = "Value " + r[i] + " expected text";
+				return false;
+			}
+		}
+		return true;
 	}
 
 	//default constructor
@@ -504,18 +591,7 @@ public:
 			this->numColumns = numCols;
 			this->columns = new Column[numCols];
 			for (int i = 0; i < numCols; i++) {
-				//allocate memory for dynamic field in every column object
-				columns[i].setValues();
-				//static functions that read from file
-				string colName = BinaryFile::readString(fin);
-				string colType = BinaryFile::readString(fin);
-				string colDVal = BinaryFile::readString(fin);
-				int dim = BinaryFile::readInteger(fin);
-				//call setters to assign values
-				columns[i].setName(colName);
-				columns[i].setType(colType);
-				columns[i].setDefaultValue(colDVal);
-				columns[i].setDimension(dim);
+				columns[i].readColumn(fin);
 			}
 			fin.close();
 		}
@@ -526,6 +602,24 @@ public:
 		}
 		else {
 			//read the record file
+			ifstream fin = dataFile.openToRead();
+			//read data from record file
+			//read how many records there are
+			//only string types
+			int numRecs = BinaryFile::readInteger(fin);
+			this->numRecords = numRecs;
+			this->records = new Record[numRecs];
+
+			for (int i = 0; i < numRecs; i++) {
+				records[i].setValues(this->numColumns);
+				records[i].setNumValues(this->numColumns);
+				for (int j = 0; j < this->numColumns; j++) {
+					string val = BinaryFile::readString(fin);
+					//i-th record j-th position in record
+					records[i][j] = val;
+				}
+			}
+			fin.close();
 		}
 	}
 
@@ -694,32 +788,24 @@ public:
 	{
 		return name == b.name && numColumns == b.numColumns && numRecords == b.numRecords;
 	}
-
+	//write table structure to file
 	void writeToBFile(BinaryFile bFile) {
 		ofstream fout = bFile.openToWrite();
 		if (!fout) {
 			cout << "File error\n";
 		}
 		else {
-			//write the table name
-			/*unsigned length = this->name.length();
-			const char* name = this->name.c_str();
-			fout.write((char*)&length, sizeof(length));
-			fout.write(name, length + 1);*/
-			//not really necessary
-
-			//write number of columns
-			//fout.write((char*)&(this->numColumns), sizeof(int));
+			
 			BinaryFile::writeInteger(fout, this->numColumns);
 
 			//write columns name, type, default value, dimension
 			for (int i = 0; i < this->numColumns; i++) {
 				//writing is done in the static functions
-				BinaryFile::writeString(fout, columns[i].getName());
+				/*BinaryFile::writeString(fout, columns[i].getName());
 				BinaryFile::writeString(fout, columns[i].getType());
 				BinaryFile::writeString(fout, columns[i].getDefaultValue());
-				BinaryFile::writeInteger(fout, this->columns[i].getDimension());
-
+				BinaryFile::writeInteger(fout, this->columns[i].getDimension());*/
+				columns[i].writeColumn(fout);
 			}
 
 			fout.close();

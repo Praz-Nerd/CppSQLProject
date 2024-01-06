@@ -337,21 +337,22 @@ public:
         cout << "\nTable: " << tableName;
         Record r1(values, countChars(params, ',') + 1);
         cout << r1 << endl;
-
-        //for testing operators and such
-        /*Record r2 = r1;
-        //cin >> r1;
-        if (r1 == r2) cout << "good\n";
-        //cout << r1;
-        r1 + "baba";
-        cout << r1;
-        r2++;
-        ++r2;
-        cout << r2;
-        if (r1 < 10) cout << "interesting\n";
-        cout << !r2;*/
-        
         delete[] values;
+        //writing to files
+        BinaryFile tableFile(tableName+".tab");
+        //check if table structure exists
+        if (!tableFile.exists()) {
+            err = "Table does not exist";
+            return 0;
+        }
+        else {
+            //read table structure
+            Table table(tableName);
+            //check record if it works with table structure
+        }
+
+        
+        
         return 1;
     }
 
