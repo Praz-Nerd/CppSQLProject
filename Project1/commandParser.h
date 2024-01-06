@@ -312,9 +312,15 @@ public:
     }
 
         int updateParser(string & err) {
-        //extract the table name for updating 
+        //extract the entity name for updating 
         string entityName = extractString(this->getCommand(), this->getCommand().find_last_of(' ') + 1, this->getCommand().length());
         BinaryFile tableFile(entityName + ".tab");
+
+        if (!tableFile.exists())
+        {
+            err = "table does not exist";
+            return 0;
+        }
 
         //extracting table name, the SET clause and the WHERE caluse
         string tableName = extractString(this->getCommand(), this->getCommand().find("UPDATE") + UPDATE_SIZE + 1, this->getCommand().find("SET") - 1);
