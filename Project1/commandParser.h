@@ -208,10 +208,10 @@ public:
 
          if (this->getCommand().find("TABLE") != string::npos) {
              BinaryFile tableFile(entityName + ".tab");
-             //BinaryFile dataFile(entityName + ".data");
+             BinaryFile dataFile(entityName + ".data");
              if (tableFile.exists()) {
                  tableFile.deleteFile();
-                 //dataFile.deleteFile();
+                 dataFile.deleteFile();
                  cout << "Table " << entityName << " was dropped" << endl;
              }
              else {
@@ -327,7 +327,7 @@ public:
     }
     int insertParser(string& err) {
         //checking if the table exists already and its structure
-        if (!checkTable(err))return 0;
+        //if (!checkTable(err))return 0; ???
 
         //length of the parameters substring from an insert command
         int length = this->getCommand().find_last_of(')') - this->getCommand().find_first_of('(') - 1;
@@ -351,21 +351,41 @@ public:
         cout << "\nTable: " << tableName;
         Record r1(values, countChars(params, ',') + 1);
         cout << r1 << endl;
-
-        //for testing operators and such
-        /*Record r2 = r1;
-        //cin >> r1;
-        if (r1 == r2) cout << "good\n";
-        //cout << r1;
-        r1 + "baba";
-        cout << r1;
-        r2++;
-        ++r2;
-        cout << r2;
-        if (r1 < 10) cout << "interesting\n";
-        cout << !r2;*/
-        
         delete[] values;
+        //writing to files
+        BinaryFile tableFile(tableName+".tab");
+        //check if table structure exists
+        if (!tableFile.exists()) {
+            err = "Table does not exist";
+            return 0;
+        }
+        else {
+            //read table structure
+            Table table(tableName);
+            //check record if it works with table structure
+            if (!table.checkRecord(r1, err))
+                return 0;
+            else {
+                //write record to file
+                // .data file stores records
+                BinaryFile dataFile(tableName + ".data");
+                //increment number of records
+                table.incrementNumRecords();
+                //if exists, append to file, else create file
+                if (!dataFile.exists()) {
+                    ofstream fout = dataFile.openToWrite();
+                    r1.writeRecord(fout);
+                    fout.close();
+                }
+                else {
+                    ofstream fout = dataFile.openToAppend();
+                    r1.writeRecord(fout);
+                    fout.close();
+                }
+                //rewrite table structure
+                table.writeToBFile(tableFile);
+            }
+        }
         return 1;
     }
 
@@ -511,6 +531,8 @@ public:
         }
         else {
             tableFile.deleteFile();
+            BinaryFile dataFile(tableName + ".data");
+            dataFile.deleteFile();
         }
 
 
