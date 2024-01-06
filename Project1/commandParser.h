@@ -208,10 +208,10 @@ public:
 
          if (this->getCommand().find("TABLE") != string::npos) {
              BinaryFile tableFile(entityName + ".tab");
-             //BinaryFile dataFile(entityName + ".data");
+             BinaryFile dataFile(entityName + ".data");
              if (tableFile.exists()) {
                  tableFile.deleteFile();
-                 //dataFile.deleteFile();
+                 dataFile.deleteFile();
                  cout << "Table " << entityName << " was dropped" << endl;
              }
              else {
