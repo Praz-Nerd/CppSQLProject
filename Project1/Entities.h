@@ -492,6 +492,15 @@ public:
 	{
 		return numRecords;
 	}
+	string* getColumnNames()
+	{
+		string* s = new string[numColumns];
+		for (int i = 0; i < numColumns; i++)
+		{
+			s[i] = columns[i].getName();
+		}
+		return s;
+	}
 	void setName(const string& newName)
 	{
 		if (newName != "")
@@ -525,6 +534,52 @@ public:
 			for (int i = 0; i < numRecords; i++)
 				records[i].displayRecord();
 		}
+	}
+	void selectAll()
+	{
+		for (int i=0; i < numColumns; i++)
+		{
+			cout << columns[i].getName() << ' ';
+
+		}
+		cout << endl;
+		for (int i = 0; i < numRecords; i++)
+		{
+			for (int j = 0; j < numColumns; j++)
+			{
+				cout << records[i][j] << " ";
+			}
+			cout << endl;
+		}
+	}
+	void selectSome(string* cols, int numCols)
+	{
+		int* poz = new int[numCols];
+		for (int i = 0; i < numCols; i++)
+		{
+			for (int j = 0; j < numColumns; j++)
+			{
+				if(cols[i]==columns[j].getName())
+				{ 
+					poz[i] = j;
+				}
+			}
+		}
+		for (int i = 0; i < numCols; i++)
+		{
+			cout << columns[poz[i]].getName() << ' ';
+
+		}
+		cout << endl;
+		for (int i = 0; i < numRecords; i++)
+		{
+			for (int j = 0; j < numCols; j++)
+			{
+				cout << regexStatements::removeQuote(records[i][poz[j]]) << " ";
+			}
+			cout << endl;
+		}
+		delete[] poz;
 	}
 	//function for incrementing number of records
 	void incrementNumRecords() {

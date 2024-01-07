@@ -69,4 +69,7 @@ public:
     static void removeSpaces(string& statement, string replacement = " ") {
         statement = regex_replace(statement, regex("\\s+"), replacement);
     }
+    static string removeQuote(string s) {
+        return regex_replace(s, regex("'"), " ");
+    }
 };

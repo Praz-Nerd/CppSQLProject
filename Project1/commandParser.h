@@ -227,8 +227,8 @@ public:
     {
         string params;
         bool hasFilter = false;
-        string entityName = extractString(this->getCommand(), this->getCommand().find_last_of(' ') + 1, this->getCommand().length());
-        string filter = extractString(this->getCommand(), this->getCommand().find("WHERE") + WHERE_SIZE + 1, this->getCommand().length());
+        
+       /* string filter = extractString(this->getCommand(), this->getCommand().find("WHERE") + WHERE_SIZE + 1, this->getCommand().length());*/
         //extracting column names to be selected (or all)
         if (this->getCommand().find("ALL") != string::npos)
             params = "all";
@@ -292,16 +292,50 @@ public:
         //    return 0;
         //}
         //delete[] values;
-        if (this->getCommand().find("TABLE") != string::npos) {
-            BinaryFile tableFile(entityName + ".tab");
-            //BinaryFile dataFile(entityName + ".data");
-            if (tableFile.exists()) {
-              
+        BinaryFile tableFile(tableName + ".tab");
+        //BinaryFile dataFile(entityName + ".data");
+
+        //checking if the table exists
+        if (tableFile.exists()) {
+            Table usedTable(tableName);
+            //displaying for the "all" case
+            if (params == "all")
+            {
+                usedTable.selectAll();
             }
-            else {
-                err = "Table does not exist";
-                return 0;
+            else
+            {
+                //extracting column names
+                string* columns = extractParameters(params, 0, params.length());
+                string* tableColumns = usedTable.getColumnNames();
+                int noColumns = countChars(params, ',')+1;
+                bool ok = 0;
+                for (int i = 0; i < noColumns; i++)
+                {
+                    ok = 0;
+                    for(int j=0; j< usedTable.getNumColumns(); j++)
+                        if (columns[i] == tableColumns[j])
+                        {
+                            ok = 1;
+                        }
+                    if (ok == 0)
+                    {
+                        delete[] columns;
+                        delete[] tableColumns;
+                        throw exception("Column does not exist");
+                        
+                    }
+                }
+                //all columns exist, proceed to print them
+                usedTable.selectSome(columns,noColumns);
+                delete[] columns;
+                delete[] tableColumns;
             }
+            
+        }
+        else {
+            err = "Table does not exist";
+            return 0;
         }
 
         return 1;
