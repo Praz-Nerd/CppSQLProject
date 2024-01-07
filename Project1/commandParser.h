@@ -356,8 +356,18 @@ public:
 
     int deleteParser(string& err) {
         
-        //extract table name for deleting
-        string tableName = extractString(this->getCommand(), this->getCommand().find("FROM")+ FROM_SIZE + 1, this->getCommand().find("WHERE") - 1);
+        //extract table name
+        string tableName;
+        for (int i = INSERT_TABLE_LOCATION; this->getCommand()[i] != ' '; i++)
+            tableName.push_back(this->getCommand()[i]);
+
+        BinaryFile tableFile(tableName + ".tab");
+
+        if (!tableFile.exists())
+        {
+            err = "table does not exist";
+            return 0;
+        }
 
         int filterLocation;
         string filter = "";
