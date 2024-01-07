@@ -18,7 +18,7 @@ string regexStatements::updateStatement = "(UPDATE) [_a-zA-Z]+ (SET) [_a-zA-Z]+\
 string regexStatements::createTableStatement = "(CREATE) (TABLE) [_a-zA-Z]+\\s*(?:IF NOT EXISTS|)\\s*\\((.*?)\\)";
 string regexStatements::createIndexStatement = "(CREATE) (INDEX)\\s*(?:IF NOT EXISTS|)\\s*[_a-zA-Z]+ (ON) [_a-zA-Z]+\\s*\\([_a-zA-Z]+\\)";
 //IMPORT statement to be made
-string regexStatements::importStatement = "(IMPORT) [_a-zA-Z]+ (.*?)";
+string regexStatements::importStatement = "(IMPORT) [_a-zA-Z]+ [_a-zA-Z]+(.csv)";
 //keeping track of display and select statements to write to text files
 int commandParser::displayCounter = 0;
 int commandParser::selectCounter = 0;
