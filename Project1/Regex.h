@@ -81,4 +81,70 @@ public:
     static string removeQuote(string s, string replacement = " ") {
         return regex_replace(s, regex("'"), replacement);
     }
+
+    //functions for checking conditions
+    static bool condition(int val1, int val2, string op)
+    {
+        if (op == "<")
+            return val1 < val2;
+
+        if (op == "<=")
+            return val1 <= val2;
+
+        if (op == ">")
+            return val1 > val2;
+
+        if (op == ">=")
+            return val1 >= val2;
+
+        if (op == "!=")
+            return val1 != val2;
+
+        if (op == "=")
+            return val1 == val2;
+    }
+
+    static bool condition(float val1, float val2, string op)
+    {
+        if (op == "<")
+            return val1 < val2;
+
+        if (op == "<=")
+            return val1 <= val2;
+
+        if (op == ">")
+            return val1 > val2;
+
+        if (op == ">=")
+            return val1 >= val2;
+
+        if (op == "!=")
+            return val1 != val2;
+
+        if (op == "=")
+            return val1 == val2;
+    }
+    static bool condition(string val1, string val2, string op)
+    {
+        if (op == "<")
+            return val1 < val2;
+
+        if (op == "<=")
+            return val1 <= val2;
+
+        if (op == ">")
+            return val1 > val2;
+
+        if (op == ">=")
+            return val1 >= val2;
+
+        if (op == "!=")
+            return val1 != val2;
+
+        if (op == "=")
+            return val1 == val2;
+    }
+
+
+
 };
