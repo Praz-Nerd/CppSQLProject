@@ -135,28 +135,37 @@ public:
         }
         return k;
     }
-    //extract strings in a range by the separator, by default is comma, requires string with no spaces
+    //extract strings in a range by the separator, by default is comma
     static string* extractParameters(string s, int start, int end, char separator = ',') {
-        string* values = new string[countChars(s, separator) + 1];
+        int size = countChars(s, separator) + 1;
+        string* values = new string[size];
         int currentValue = 0;
         for (int i = start; i < end; i++) {
-            if (s[i] == ' ') {
+           /* if (s[i] == ' ') {
                 delete[] values;
                 return nullptr;
-            }
-            else if (s[i] == separator)
+            }*/
+            if (s[i] == separator)
                 currentValue++;
             else
                 values[currentValue].push_back(s[i]);
         }
+
+        for (int i = 0; i < size; i++) {
+            //remove spaces from beginning and end of strings
+      
+            values[i] = regexStatements::trimString(values[i]);
+        }
+
         return values;
     }
     //extract the string between 2 positions
     static string extractString(string s, int start, int end) {
         string string = "";
-
-        for (int i = start; i < end; i++)
+        string = s.substr(start, end - start);
+      /*  for (int i = start; i < end; i++)
             string.push_back(s[i]);
+        return string;*/
         return string;
     }
     //extract an integer from a string with only numbers
@@ -176,6 +185,27 @@ public:
 
         return x;
     }
+    //-1034.032
+    static float toFloat(string& s) {
+        //extract integer part and assign to an integer variable
+        string integerPart = extractString(s, 0, s.find_first_of('.')-1);
+        cout << integerPart << endl;
+        int n = toInt(integerPart);
+        cout << n << endl;
+        float mantissa = 0;
+        int p = 1;
+        for (int i = s.find_first_of('.') + 1; i < s.length(); i++) {
+            p = p * 10;
+            mantissa = mantissa + (float)(s[i] - '0') / p;
+        }
+        cout << mantissa << endl;
+            //check positive or negative
+        if (n > 0)
+            return (float)n + mantissa;
+        else
+            return (float)n - mantissa;
+    }
+
     //functions for individually parsing a command
     int displayParser(string& err) {
         //extract the table name for displaying
@@ -236,6 +266,8 @@ public:
             //params = extractString(command, command.find_first_of('(') + 1, command.find_last_of(')'));
             int length = this->getCommand().find_last_of(')') - this->getCommand().find_first_of('(') - 1;
             params = this->getCommand().substr(this->getCommand().find_first_of('(') + 1, length);
+            //remove spaces from column list
+            regexStatements::removeSpaces(params, "");
             if (params.find(' ') != string::npos || length <= 0) {
                 err = "Invalid parameter list";
                 return 0;
@@ -527,6 +559,7 @@ public:
 
         //remove all spaces from the column substring and check validity
         regexStatements::removeSpaces(columns, "");
+        cout << columns << endl;
         if ((countChars(columns, '(') != countChars(columns, ')'))||columns[0]!='(') {
             err = "Invalid column list";
             return 0;
@@ -610,11 +643,98 @@ public:
 
     int importParser(string& err) {
         //IMPORT table file.csv
+        //extract table and file name
         string tableName = extractString(this->getCommand(), this->getCommand().find_first_of(' ')+1, this->getCommand().find_last_of(' '));
         string fileName = extractString(this->getCommand(), this->getCommand().find_last_of(' ') + 1, this->getCommand().length());
         cout << "Table: " << tableName << endl;
         cout << "File: " << fileName << endl;
+        //create object with filename
+        BinaryFile tableFile(tableName + ".tab");
         CSVFile file(fileName);
+
+        if (!tableFile.exists()) {
+            err = "Table does not exist";
+            return 0;
+        }
+        else {
+            //read table structure from file
+            Table table(tableName);
+            if (!file.exists()) {
+                err = "File does not exist";
+                return 0;
+            }
+            else {
+                int k = 0;
+                ifstream fin = file.openToRead();
+                string val;
+                //first pass through file: count the number of values in file, separated by comma
+                while (getline(fin, val, ',')) {
+                    k++;
+                }
+                fin.close();
+
+                //find number of records in the file
+                float numRecords = (float)k / table.getNumColumns();
+                cout << "Number of records in file is " << numRecords  << endl;
+
+                if (numRecords != (int)numRecords) {
+                    err = "Invalid number of values in file";
+                    return 0;
+                }
+
+                //second pass: check data integrity
+                fin = file.openToRead();
+                //dynamic array with the number of values in a record
+                string* values;
+
+                //read values from file, one by one and check integrity
+                for (int i = 0; i < numRecords; i++) {
+                    values = new string[table.getNumColumns()];
+                    for (int j = 0; j < table.getNumColumns(); j++) {
+                        getline(fin, values[j], ',');
+                    }
+                    Record r(values, table.getNumColumns());
+                    delete[] values;
+                    if (!table.checkRecord(r, err)) {
+                        fin.close();
+                        return 0;
+                    }
+                }
+                fin.close();
+
+                //third pass: saving values in database
+                BinaryFile dataFile(tableName + ".data");
+                fin = file.openToRead();
+
+                for (int i = 0; i < numRecords; i++) {
+                    values = new string[table.getNumColumns()];
+                    for (int j = 0; j < table.getNumColumns(); j++) {
+                        getline(fin, values[j], ',');
+                    }
+                    Record r(values, table.getNumColumns());
+                    delete[] values;
+                    table.incrementNumRecords();
+                    //if exists, append to file, else create file
+                    if (!dataFile.exists()) {
+                        ofstream fout = dataFile.openToWrite();
+                        r.writeRecord(fout);
+                        fout.close();
+                    }
+                    else {
+                        ofstream fout = dataFile.openToAppend();
+                        r.writeRecord(fout);
+                        fout.close();
+                    }
+                    //rewrite table structure
+                    table.writeToBFile(tableFile);
+                }
+                fin.close();
+            }
+        }
+
+
+        
+
         return 1;
     }
 

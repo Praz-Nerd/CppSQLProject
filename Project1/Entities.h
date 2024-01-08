@@ -537,23 +537,26 @@ public:
 	}
 	void selectAll()
 	{
+		//write column names
 		for (int i=0; i < numColumns; i++)
 		{
 			cout << columns[i].getName() << ' ';
 
 		}
 		cout << endl;
+		//write all records
 		for (int i = 0; i < numRecords; i++)
 		{
 			for (int j = 0; j < numColumns; j++)
 			{
-				cout << records[i][j] << " ";
+				cout << regexStatements::removeQuote(records[i][j]) << " ";
 			}
 			cout << endl;
 		}
 	}
 	void selectSome(string* cols, int numCols)
 	{
+		//find position of columns
 		int* poz = new int[numCols];
 		for (int i = 0; i < numCols; i++)
 		{
@@ -565,12 +568,14 @@ public:
 				}
 			}
 		}
+		//write columns
 		for (int i = 0; i < numCols; i++)
 		{
 			cout << columns[poz[i]].getName() << ' ';
 
 		}
 		cout << endl;
+		//write records
 		for (int i = 0; i < numRecords; i++)
 		{
 			for (int j = 0; j < numCols; j++)
