@@ -287,7 +287,10 @@ public:
 			delete[] this->values;
 		this->values = new string[numValues];
 		for (int i = 0; i < numValues; i++)
+		{
 			this->values[i] = values[i];
+		}
+			
 	}
 	//initialize dynamic array, no values
 	void setValues(int size) {
@@ -366,6 +369,13 @@ public:
 			cout << endl << "Value on column " << i + 1 << " : " << values[i];
 		}
 		cout << endl;
+	}
+	//function for removing apostrophes
+	void removeApostrophes() {
+		for (int i = 0; i < numValues; i++)
+		{
+			values[i] = regexStatements::removeQuote(values[i], "");
+		}
 	}
 
 	void addValue(string s) {
@@ -590,7 +600,6 @@ public:
 	void incrementNumRecords() {
 		this->numRecords++;
 	}
-
 	//a funtion for checking table structure against a record
 	bool checkRecord(Record& r, string& err) {
 		//check size
@@ -617,7 +626,7 @@ public:
 				return false;
 			}
 			if (this->columns[i].getType() == "text" && (!regexStatements::isText(r[i]))) {
-				err = "Value " + r[i] + " expected text";
+				err = "Value " + r[i] + " expected text between apostrophes";
 				return false;
 			}
 		}
