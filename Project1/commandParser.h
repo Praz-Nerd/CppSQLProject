@@ -432,6 +432,8 @@ public:
             if (!table.checkRecord(r1, err))
                 return 0;
             else {
+                //removing apostrophes
+                r1.removeApostrophes();
                 //write record to file
                 // .data file stores records
                 BinaryFile dataFile(tableName + ".data");
