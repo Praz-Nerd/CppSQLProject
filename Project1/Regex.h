@@ -69,7 +69,16 @@ public:
     static void removeSpaces(string& statement, string replacement = " ") {
         statement = regex_replace(statement, regex("\\s+"), replacement);
     }
-    static string removeQuote(string s) {
-        return regex_replace(s, regex("'"), " ");
+    //function that removes sapces from beginning and end of a string
+    static string trimString(string& s) {
+        int start = s.find_first_not_of(" \t");
+        int end = s.find_last_not_of(" \t");
+        if (start == string::npos) {
+            return "";
+        }
+        return s.substr(start, end - start + 1);
+    }
+    static string removeQuote(string s, string replacement = " ") {
+        return regex_replace(s, regex("'"), replacement);
     }
 };
