@@ -60,7 +60,8 @@ public:
 					//display parser
 					cout << "this is a display command\n";
 					if (regexStatements::checkRegex(statement, regexStatements::getDisplayStatement())) {
-						cp.displayParser();
+						if (!cp.displayParser(err))
+							throw(err);
 					}
 					else {
 						err = "Display command not properly formatted\nDISPLAY TABLE table_name;";
@@ -116,6 +117,18 @@ public:
 					}
 					else {
 						err = "Delete command not properly formatted\nDELETE FROM table_name WHERE condition";
+						throw(err);
+					}
+				}
+				else if (cp.getCommandType() == "IMPORT") {
+					//import parser
+					cout << "this is an import command\n";
+					if (regexStatements::checkRegex(statement, regexStatements::getImportStatement())) {
+						if (!cp.importParser(err))
+							throw(err);
+					}
+					else {
+						err = "Import command not properly formatted\nIMPORT tablename file.csv";
 						throw(err);
 					}
 				}

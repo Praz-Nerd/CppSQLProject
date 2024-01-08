@@ -20,6 +20,8 @@ class commandParser {
     const static int SET_SIZE = 3;
     const static int TABLE_SIZE = 5;
     const static int COLUMN_ATTRIBUTES = 4;
+    static int displayCounter;
+    static int selectCounter;
 public:
     void setCommand(string& s) {
         if (!s.empty()) {
@@ -38,7 +40,7 @@ public:
     }
 
     void setCommandType(string s) {
-        if (s == "DISPLAY" || s == "DROP" || s == "INSERT" || s == "SELECT" || s == "DELETE" || s == "UPDATE" || s == "CREATE") {
+        if (s == "DISPLAY" || s == "DROP" || s == "INSERT" || s == "SELECT" || s == "DELETE" || s == "UPDATE" || s == "CREATE" || s == "IMPORT") {
             this->commandType = s;
         }
         else {
@@ -133,28 +135,37 @@ public:
         }
         return k;
     }
-    //extract strings in a range by the separator, by default is comma, requires string with no spaces
+    //extract strings in a range by the separator, by default is comma
     static string* extractParameters(string s, int start, int end, char separator = ',') {
-        string* values = new string[countChars(s, separator) + 1];
+        int size = countChars(s, separator) + 1;
+        string* values = new string[size];
         int currentValue = 0;
         for (int i = start; i < end; i++) {
-            if (s[i] == ' ') {
+           /* if (s[i] == ' ') {
                 delete[] values;
                 return nullptr;
-            }
-            else if (s[i] == separator)
+            }*/
+            if (s[i] == separator)
                 currentValue++;
             else
                 values[currentValue].push_back(s[i]);
         }
+
+        for (int i = 0; i < size; i++) {
+            //remove spaces from beginning and end of strings
+      
+            values[i] = regexStatements::trimString(values[i]);
+        }
+
         return values;
     }
     //extract the string between 2 positions
     static string extractString(string s, int start, int end) {
         string string = "";
-
-        for (int i = start; i < end; i++)
+        string = s.substr(start, end - start);
+      /*  for (int i = start; i < end; i++)
             string.push_back(s[i]);
+        return string;*/
         return string;
     }
     //extract an integer from a string with only numbers
@@ -174,12 +185,44 @@ public:
 
         return x;
     }
+    //-1034.032
+    static float toFloat(string& s) {
+        //extract integer part and assign to an integer variable
+        string integerPart = extractString(s, 0, s.find_first_of('.')-1);
+        cout << integerPart << endl;
+        int n = toInt(integerPart);
+        cout << n << endl;
+        float mantissa = 0;
+        int p = 1;
+        for (int i = s.find_first_of('.') + 1; i < s.length(); i++) {
+            p = p * 10;
+            mantissa = mantissa + (float)(s[i] - '0') / p;
+        }
+        cout << mantissa << endl;
+            //check positive or negative
+        if (n > 0)
+            return (float)n + mantissa;
+        else
+            return (float)n - mantissa;
+    }
+
     //functions for individually parsing a command
-    int displayParser() {
+    int displayParser(string& err) {
         //extract the table name for displaying
         string entityName = extractString(this->getCommand(), this->getCommand().find_last_of(' ') + 1, this->getCommand().length());
-
         cout << "Table to display: " << entityName << endl;
+
+        BinaryFile tableFile(entityName + ".tab");
+
+        if (!tableFile.exists()) {
+            err = "Table does not exist";
+            return 0;
+        }
+        else {
+            Table table(entityName);
+            table.displayTableInfo();
+        }
+
         return 1;
     }
 
@@ -195,10 +238,10 @@ public:
 
          if (this->getCommand().find("TABLE") != string::npos) {
              BinaryFile tableFile(entityName + ".tab");
-             //BinaryFile dataFile(entityName + ".data");
+             BinaryFile dataFile(entityName + ".data");
              if (tableFile.exists()) {
                  tableFile.deleteFile();
-                 //dataFile.deleteFile();
+                 dataFile.deleteFile();
                  cout << "Table " << entityName << " was dropped" << endl;
              }
              else {
@@ -214,6 +257,8 @@ public:
     {
         string params;
         bool hasFilter = false;
+        
+       /* string filter = extractString(this->getCommand(), this->getCommand().find("WHERE") + WHERE_SIZE + 1, this->getCommand().length());*/
         //extracting column names to be selected (or all)
         if (this->getCommand().find("ALL") != string::npos)
             params = "all";
@@ -221,6 +266,8 @@ public:
             //params = extractString(command, command.find_first_of('(') + 1, command.find_last_of(')'));
             int length = this->getCommand().find_last_of(')') - this->getCommand().find_first_of('(') - 1;
             params = this->getCommand().substr(this->getCommand().find_first_of('(') + 1, length);
+            //remove spaces from column list
+            regexStatements::removeSpaces(params, "");
             if (params.find(' ') != string::npos || length <= 0) {
                 err = "Invalid parameter list";
                 return 0;
@@ -238,6 +285,15 @@ public:
         }
 
         //searches for a filter after the WHERE clause
+        //eg WHERE id = 2 string filter  = "id = 2"
+        //bool condition(char operator, int val1, int val2)
+        //bool condition(char operator, float val1, float val2)
+        //maybe
+        // for int i = 0 ; i < table.numberOfRecords ; i++
+        // for int j = 0; j  < table.numberOfColumns; j++
+        // record[i][j]
+        // if tyep = intgerte, float, taext
+        // if(condition(operator, val1, val2 = record[i][j])
         int filterLocation;
         string filter = "";
         if (this->getCommand().find("WHERE") != string::npos) {
@@ -268,6 +324,52 @@ public:
         //    return 0;
         //}
         //delete[] values;
+        BinaryFile tableFile(tableName + ".tab");
+        //BinaryFile dataFile(entityName + ".data");
+
+        //checking if the table exists
+        if (tableFile.exists()) {
+            Table usedTable(tableName);
+            //displaying for the "all" case
+            if (params == "all")
+            {
+                usedTable.selectAll();
+            }
+            else
+            {
+                //extracting column names
+                string* columns = extractParameters(params, 0, params.length());
+                string* tableColumns = usedTable.getColumnNames();
+                int noColumns = countChars(params, ',')+1;
+                bool ok = 0;
+                for (int i = 0; i < noColumns; i++)
+                {
+                    ok = 0;
+                    for(int j=0; j< usedTable.getNumColumns(); j++)
+                        if (columns[i] == tableColumns[j])
+                        {
+                            ok = 1;
+                        }
+                    if (ok == 0)
+                    {
+                        delete[] columns;
+                        delete[] tableColumns;
+                        throw exception("Column does not exist");
+                        
+                    }
+                }
+                //all columns exist, proceed to print them
+                usedTable.selectSome(columns,noColumns);
+                delete[] columns;
+                delete[] tableColumns;
+            }
+            
+        }
+        else {
+            err = "Table does not exist";
+            return 0;
+        }
+
         return 1;
     }
 
@@ -275,8 +377,25 @@ public:
     {
         //extract table name
         string tableName;
+
+        executeCommands execute;
+        if (!execute.existTables(tableName))
+        {
+            cout << "The table doesn't exist " << tableName<<'\n';
+            return 0; 
+        }
+        //check the table structure
+        if (!execute.correctStructure(tableName,tableName))
+        {
+            cout << "The table doesn't have a correct structure " << tableName <<'\n';
+            return 0;
+        }
+        return 1;
+    }
+    
         for (int i = INSERT_TABLE_LOCATION; this->getCommand()[i] != ' '; i++)
                tableName.push_back(this->getCommand()[i]);
+
 
         BinaryFile tableFile(tableName + ".tab");
 
@@ -307,9 +426,44 @@ public:
         cout << r1 << endl;
 
         delete[] values;
+        //writing to files
+        BinaryFile tableFile(tableName+".tab");
+        //check if table structure exists
+        if (!tableFile.exists()) {
+            err = "Table does not exist";
+            return 0;
+        }
+        else {
+            //read table structure
+            Table table(tableName);
+            //check record if it works with table structure
+            if (!table.checkRecord(r1, err))
+                return 0;
+            else {
+                //write record to file
+                // .data file stores records
+                BinaryFile dataFile(tableName + ".data");
+                //increment number of records
+                table.incrementNumRecords();
+                //if exists, append to file, else create file
+                if (!dataFile.exists()) {
+                    ofstream fout = dataFile.openToWrite();
+                    r1.writeRecord(fout);
+                    fout.close();
+                }
+                else {
+                    ofstream fout = dataFile.openToAppend();
+                    r1.writeRecord(fout);
+                    fout.close();
+                }
+                //rewrite table structure
+                table.writeToBFile(tableFile);
+            }
+        }
         return 1;
 
     }
+
 
         int updateParser(string & err) {
         //extract the entity name for updating 
@@ -321,6 +475,7 @@ public:
             err = "table does not exist";
             return 0;
         }
+
 
         //extracting table name, the SET clause and the WHERE caluse
         string tableName = extractString(this->getCommand(), this->getCommand().find("UPDATE") + UPDATE_SIZE + 1, this->getCommand().find("SET") - 1);
@@ -427,11 +582,12 @@ public:
             tableName = extractString(this->getCommand(), this->getCommand().find("TABLE") + TABLE_SIZE + 1, this->getCommand().find_first_of('(') - 1);
 
         BinaryFile tableFile(tableName + ".tab");
-
+        
 
 
         //remove all spaces from the column substring and check validity
         regexStatements::removeSpaces(columns, "");
+        cout << columns << endl;
         if ((countChars(columns, '(') != countChars(columns, ')'))||columns[0]!='(') {
             err = "Invalid column list";
             return 0;
@@ -470,6 +626,8 @@ public:
         }
         else {
             tableFile.deleteFile();
+            BinaryFile dataFile(tableName + ".data");
+            dataFile.deleteFile();
         }
 
 
@@ -498,7 +656,6 @@ public:
         
         Table table(tableName, colNumber, columnArray);
         table.displayTableInfo();
-
         //write to file
         table.writeToBFile(tableFile);
 
@@ -509,6 +666,103 @@ public:
         //execute command, create table file
         delete[] values;
         delete[] columnArray;
+        return 1;
+    }
+
+    int importParser(string& err) {
+        //IMPORT table file.csv
+        //extract table and file name
+        string tableName = extractString(this->getCommand(), this->getCommand().find_first_of(' ')+1, this->getCommand().find_last_of(' '));
+        string fileName = extractString(this->getCommand(), this->getCommand().find_last_of(' ') + 1, this->getCommand().length());
+        cout << "Table: " << tableName << endl;
+        cout << "File: " << fileName << endl;
+        //create object with filename
+        BinaryFile tableFile(tableName + ".tab");
+        CSVFile file(fileName);
+
+        if (!tableFile.exists()) {
+            err = "Table does not exist";
+            return 0;
+        }
+        else {
+            //read table structure from file
+            Table table(tableName);
+            if (!file.exists()) {
+                err = "File does not exist";
+                return 0;
+            }
+            else {
+                int k = 0;
+                ifstream fin = file.openToRead();
+                string val;
+                //first pass through file: count the number of values in file, separated by comma
+                while (getline(fin, val, ',')) {
+                    k++;
+                }
+                fin.close();
+
+                //find number of records in the file
+                float numRecords = (float)k / table.getNumColumns();
+                cout << "Number of records in file is " << numRecords  << endl;
+
+                if (numRecords != (int)numRecords) {
+                    err = "Invalid number of values in file";
+                    return 0;
+                }
+
+                //second pass: check data integrity
+                fin = file.openToRead();
+                //dynamic array with the number of values in a record
+                string* values;
+
+                //read values from file, one by one and check integrity
+                for (int i = 0; i < numRecords; i++) {
+                    values = new string[table.getNumColumns()];
+                    for (int j = 0; j < table.getNumColumns(); j++) {
+                        getline(fin, values[j], ',');
+                    }
+                    Record r(values, table.getNumColumns());
+                    delete[] values;
+                    if (!table.checkRecord(r, err)) {
+                        fin.close();
+                        return 0;
+                    }
+                }
+                fin.close();
+
+                //third pass: saving values in database
+                BinaryFile dataFile(tableName + ".data");
+                fin = file.openToRead();
+
+                for (int i = 0; i < numRecords; i++) {
+                    values = new string[table.getNumColumns()];
+                    for (int j = 0; j < table.getNumColumns(); j++) {
+                        getline(fin, values[j], ',');
+                    }
+                    Record r(values, table.getNumColumns());
+                    delete[] values;
+                    table.incrementNumRecords();
+                    //if exists, append to file, else create file
+                    if (!dataFile.exists()) {
+                        ofstream fout = dataFile.openToWrite();
+                        r.writeRecord(fout);
+                        fout.close();
+                    }
+                    else {
+                        ofstream fout = dataFile.openToAppend();
+                        r.writeRecord(fout);
+                        fout.close();
+                    }
+                    //rewrite table structure
+                    table.writeToBFile(tableFile);
+                }
+                fin.close();
+            }
+        }
+
+
+        
+
         return 1;
     }
 
