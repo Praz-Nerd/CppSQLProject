@@ -236,6 +236,8 @@ public:
             //params = extractString(command, command.find_first_of('(') + 1, command.find_last_of(')'));
             int length = this->getCommand().find_last_of(')') - this->getCommand().find_first_of('(') - 1;
             params = this->getCommand().substr(this->getCommand().find_first_of('(') + 1, length);
+            //remove spaces from column list
+            regexStatements::removeSpaces(params, "");
             if (params.find(' ') != string::npos || length <= 0) {
                 err = "Invalid parameter list";
                 return 0;
