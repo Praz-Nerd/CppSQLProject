@@ -135,28 +135,37 @@ public:
         }
         return k;
     }
-    //extract strings in a range by the separator, by default is comma, requires string with no spaces
+    //extract strings in a range by the separator, by default is comma
     static string* extractParameters(string s, int start, int end, char separator = ',') {
-        string* values = new string[countChars(s, separator) + 1];
+        int size = countChars(s, separator) + 1;
+        string* values = new string[size];
         int currentValue = 0;
         for (int i = start; i < end; i++) {
-            if (s[i] == ' ') {
+           /* if (s[i] == ' ') {
                 delete[] values;
                 return nullptr;
-            }
-            else if (s[i] == separator)
+            }*/
+            if (s[i] == separator)
                 currentValue++;
             else
                 values[currentValue].push_back(s[i]);
         }
+
+        for (int i = 0; i < size; i++) {
+            //remove spaces from beginning and end of strings
+      
+            values[i] = regexStatements::trimString(values[i]);
+        }
+
         return values;
     }
     //extract the string between 2 positions
     static string extractString(string s, int start, int end) {
         string string = "";
-
-        for (int i = start; i < end; i++)
+        string = s.substr(start, end - start);
+      /*  for (int i = start; i < end; i++)
             string.push_back(s[i]);
+        return string;*/
         return string;
     }
     //extract an integer from a string with only numbers
@@ -176,6 +185,27 @@ public:
 
         return x;
     }
+    //-1034.032
+    static float toFloat(string& s) {
+        //extract integer part and assign to an integer variable
+        string integerPart = extractString(s, 0, s.find_first_of('.')-1);
+        cout << integerPart << endl;
+        int n = toInt(integerPart);
+        cout << n << endl;
+        float mantissa = 0;
+        int p = 1;
+        for (int i = s.find_first_of('.') + 1; i < s.length(); i++) {
+            p = p * 10;
+            mantissa = mantissa + (float)(s[i] - '0') / p;
+        }
+        cout << mantissa << endl;
+            //check positive or negative
+        if (n > 0)
+            return (float)n + mantissa;
+        else
+            return (float)n - mantissa;
+    }
+
     //functions for individually parsing a command
     int displayParser(string& err) {
         //extract the table name for displaying
@@ -529,6 +559,7 @@ public:
 
         //remove all spaces from the column substring and check validity
         regexStatements::removeSpaces(columns, "");
+        cout << columns << endl;
         if ((countChars(columns, '(') != countChars(columns, ')'))||columns[0]!='(') {
             err = "Invalid column list";
             return 0;

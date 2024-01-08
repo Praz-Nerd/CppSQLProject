@@ -60,7 +60,12 @@ int main(int argc, char* argv[]) {
     catch (exception e) {
         cout << e.what() << endl;
     }
-    
+
+    //bere de la altex
+   /* cout << "TESTING TO FLOAT!!!!!!!!!" << endl;
+    string altex = "-2024.85";
+    float x = commandParser::toFloat(altex);
+    cout << x << endl;*/
 
     string s;
     
