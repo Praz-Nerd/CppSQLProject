@@ -373,10 +373,11 @@ public:
         return 1;
     }
 
-    //checking if the table exists and its structure
-    bool checkTable(string& err)
+    int insertParser(string& err)
     {
+        //extract table name
         string tableName;
+
         executeCommands execute;
         if (!execute.existTables(tableName))
         {
@@ -391,32 +392,39 @@ public:
         }
         return 1;
     }
-    int insertParser(string& err) {
-        //checking if the table exists already and its structure
-        //if (!checkTable(err))return 0; ???
+    
+        for (int i = INSERT_TABLE_LOCATION; this->getCommand()[i] != ' '; i++)
+               tableName.push_back(this->getCommand()[i]);
 
+
+        BinaryFile tableFile(tableName + ".tab");
+
+          if (!tableFile.exists()) 
+          {
+            err = "table does not exist";
+            return 0;
+          }
+   
         //length of the parameters substring from an insert command
         int length = this->getCommand().find_last_of(')') - this->getCommand().find_first_of('(') - 1;
+
         //the substring between the to paranthesies from an insert statement
-        string params = this->getCommand().substr(this->getCommand().find_first_of('(')+1, length);
-        //extract table name
-        string tableName;
-        for (int i = INSERT_TABLE_LOCATION; this->getCommand()[i] != ' '; i++)
-            tableName.push_back(this->getCommand()[i]);
+        string params = this->getCommand().substr(this->getCommand().find_first_of('(') + 1, length);
 
         //get an array of strings from parameters
         string* values = extractParameters(params, 0, params.length());
 
         if (!values) {
-            err = "Invalid parameter list";
-            delete[] values;
-            return 0;
+              err = "Invalid parameter list";
+              delete[] values;
+              return 0;
         }
 
         //instantiate a record (line of a table) and print to screen
         cout << "\nTable: " << tableName;
         Record r1(values, countChars(params, ',') + 1);
         cout << r1 << endl;
+
         delete[] values;
         //writing to files
         BinaryFile tableFile(tableName+".tab");
@@ -453,11 +461,22 @@ public:
             }
         }
         return 1;
+
     }
 
-    int updateParser(string & err) {
-            //checking if the table exists already and its structure
-            if (!checkTable(err))return 0;
+
+        int updateParser(string & err) {
+        //extract the entity name for updating 
+        string entityName = extractString(this->getCommand(), this->getCommand().find_last_of(' ') + 1, this->getCommand().length());
+        BinaryFile tableFile(entityName + ".tab");
+
+        if (!tableFile.exists())
+        {
+            err = "table does not exist";
+            return 0;
+        }
+
+
         //extracting table name, the SET clause and the WHERE caluse
         string tableName = extractString(this->getCommand(), this->getCommand().find("UPDATE") + UPDATE_SIZE + 1, this->getCommand().find("SET") - 1);
         string setValue = extractString(this->getCommand(), this->getCommand().find("SET") +SET_SIZE+ 1, this->getCommand().find("WHERE") - 1);
@@ -491,10 +510,19 @@ public:
     }
 
     int deleteParser(string& err) {
-        //checking if the table exists already and its structure
-        if (!checkTable(err))return 0;
+        
         //extract table name
-        string tableName = extractString(this->getCommand(), this->getCommand().find("FROM")+ FROM_SIZE + 1, this->getCommand().find("WHERE") - 1);
+        string tableName;
+        for (int i = INSERT_TABLE_LOCATION; this->getCommand()[i] != ' '; i++)
+            tableName.push_back(this->getCommand()[i]);
+
+        BinaryFile tableFile(tableName + ".tab");
+
+        if (!tableFile.exists())
+        {
+            err = "table does not exist";
+            return 0;
+        }
 
         int filterLocation;
         string filter = "";
