@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include<fstream>
 #include "Files.h"
 #include "Regex.h"
 using namespace std;
@@ -641,6 +642,15 @@ public:
 		this->columns = nullptr;
 		this->records = nullptr;
 	}
+	//function for rewriting the data file
+	void rewriteData()
+	{
+		BinaryFile file(name + ".data");
+		ofstream fout = file.openToWrite();
+		for (int i = 0; i < numRecords; i++)
+			records[i].writeRecord(fout);
+		fout.close();
+	}
 
 	//constructor that takes info about table from binary files
 	Table(string name) {
@@ -669,6 +679,7 @@ public:
 			}
 			fin.close();
 		}
+		
 		//if no data is assigned to the table, then we assign values as such
 		if (!dataFile.exists()) {
 			this->records = nullptr;
