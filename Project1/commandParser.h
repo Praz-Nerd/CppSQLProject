@@ -694,6 +694,8 @@ public:
                     }
                     Record r(values, table.getNumColumns());
                     delete[] values;
+                    //format data for writing to file
+                    r.removeApostrophes();
                     table.incrementNumRecords();
                     //if exists, append to file, else create file
                     if (!dataFile.exists()) {
