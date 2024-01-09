@@ -64,7 +64,7 @@ public:
 							throw(err);
 					}
 					else {
-						err = "Display command not properly formatted\nDISPLAY TABLE table_name;";
+						err = "Display command not properly formatted\nDISPLAY TABLE table_name";
 						throw(err);
 					}
 				}
