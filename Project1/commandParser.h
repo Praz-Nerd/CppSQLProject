@@ -199,8 +199,14 @@ public:
             return 0;
         }
         else {
+            //display table information to a report file and to the console
+            TextFile reportFile("DISPLAY_" + to_string(++displayCounter)+".txt");
+            ofstream fout = reportFile.openToWrite();
             Table table(entityName);
             table.displayTableInfo();
+            table.displayTableInfo(fout);
+            fout.close();
+            cout << "Report file " << reportFile.getFileName() << " created.\n";
         }
 
         return 1;
@@ -319,6 +325,8 @@ public:
             //positions if Where clause valid records
             int* validRec = nullptr;
             int size = 0;
+            //creating report file
+            TextFile reportFile("SELECT_" + to_string(++selectCounter) + ".txt");
             //checking filter column
             if (hasFilter) {
                 bool ok = 0;
@@ -335,7 +343,11 @@ public:
                     //check valid records return their position
                     validRec = usedTable.validRecords(filterColumn, filterOperator, filterValue, size);
                     if (size == 0) {
+                        ofstream fout = reportFile.openToWrite();
                         cout << "No records to show" << endl;
+                        fout << "No records to show" << endl;
+                        fout.close();
+                        cout << "Report file " << reportFile.getFileName() << " created\n";
                         delete[] columns;
                         delete[] tableColumns;
                         delete[]validRec;
@@ -347,15 +359,16 @@ public:
             //displaying for the "all" case
             if (params == "all")
             {
+                ofstream fout = reportFile.openToWrite();
                 if (!hasFilter) {
                     //no WHERE clause
-                    usedTable.selectAll();
+                    usedTable.selectAll(fout);
                 }
                 else {
                     //with WHERE clause
-                    usedTable.selectAll(validRec, size);
+                    usedTable.selectAll(validRec, size, fout);
                 }
-               
+                fout.close();
             }
             else
             {
@@ -378,15 +391,17 @@ public:
                     }
                 }
                 //all columns exist, proceed to print them
+                ofstream fout = reportFile.openToWrite();
                 if (!hasFilter) {
-                    usedTable.selectSome(columns, noColumns);
+                    usedTable.selectSome(columns, noColumns, fout);
                 }
                 else
-                    usedTable.selectSome(columns, noColumns, validRec, size);
-
+                    usedTable.selectSome(columns, noColumns, validRec, size, fout);
+                fout.close();
                
                
             }
+            cout << "Report file " << reportFile.getFileName() << " created\n";
             //deallocate memory
             delete[] columns;
             delete[] tableColumns;
@@ -849,10 +864,6 @@ public:
                 fin.close();
             }
         }
-
-
-        
-
         return 1;
     }
 

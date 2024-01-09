@@ -119,6 +119,9 @@ public:
 	{
 		cout << values[0] << " " << values[1] << " " << values[2] << endl;
 	}
+	void displayColumn(ofstream& fout) {
+		fout << values[0] << " " << values[1] << " " << values[2] << endl;
+	}
 	//= overloading
 	Column& operator=(const Column& c) {
 		if (this != &c) {
@@ -371,6 +374,12 @@ public:
 			cout << endl << "Value on column " << i + 1 << " : " << values[i];
 		}
 		cout << endl;
+	}
+	void displayRecord(ofstream& fout) {
+		for (int i = 0; i < numValues; i++) {
+			fout << endl << "Value on column " << i + 1 << " : " << values[i];
+		}
+		fout << endl;
 	}
 	//function for removing apostrophes
 	void removeApostrophes() {
@@ -645,46 +654,66 @@ public:
 				records[i].displayRecord();
 		}
 	}
-	void selectAll()
+	//display to text file
+	void displayTableInfo(ofstream& fout)
+	{
+		fout << "Table Name: " << name << ", Number of Columns: " << numColumns << ", Number of Records: " << numRecords << endl;
+		for (int i = 0; i < numColumns; i++)
+			columns[i].displayColumn(fout);
+		if (this->records == nullptr)
+			fout << "No records to show\n";
+		else {
+			for (int i = 0; i < numRecords; i++)
+				records[i].displayRecord(fout);
+		}
+	}
+	void selectAll(ofstream& fout)
 	{
 		//write column names
 		for (int i=0; i < numColumns; i++)
 		{
 			cout << columns[i].getName() << ' ';
+			fout << columns[i].getName() << ' ';
 
 		}
 		cout << endl;
+		fout << endl;
 		//write all records
 		for (int i = 0; i < numRecords; i++)
 		{
 			for (int j = 0; j < numColumns; j++)
 			{
 				cout << regexStatements::removeQuote(records[i][j]) << " ";
+				fout << regexStatements::removeQuote(records[i][j]) << " ";
 			}
 			cout << endl;
+			fout << endl;
 		}
 	}
 	//SELECT ALL WHERE
-	void selectAll(int* posRecords, int arrSize) {
+	void selectAll(int* posRecords, int arrSize, ofstream& fout) {
 		//write column names
 		for (int i = 0; i < numColumns; i++)
 		{
 			cout << columns[i].getName() << ' ';
-
+			fout << columns[i].getName() << ' ';
 		}
 		cout << endl;
+		fout << endl;
 		//write all records
 		for (int i = 0; i < arrSize; i++)
 		{
 			for (int j = 0; j < numColumns; j++)
 			{
 				cout << regexStatements::removeQuote(records[posRecords[i]][j]) << " ";
+				fout << regexStatements::removeQuote(records[i][j]) << " ";
 			}
 			cout << endl;
+			fout << endl;
 		}
 	}
 	//select some columns
-	void selectSome(string* cols, int numCols)
+	void selectSome(string* cols, int numCols, ofstream& fout)
 	{
 		//find position of columns
 		int* poz = new int[numCols];
@@ -702,22 +731,26 @@ public:
 		for (int i = 0; i < numCols; i++)
 		{
 			cout << columns[poz[i]].getName() << ' ';
+			fout << columns[poz[i]].getName() << ' ';
 
 		}
 		cout << endl;
+		fout << endl;
 		//write records
 		for (int i = 0; i < numRecords; i++)
 		{
 			for (int j = 0; j < numCols; j++)
 			{
 				cout << regexStatements::removeQuote(records[i][poz[j]]) << " ";
+				fout << regexStatements::removeQuote(records[i][poz[j]]) << " ";
 			}
 			cout << endl;
+			fout << endl;
 		}
 		delete[] poz;
 	}
 	//SELECT some cols WHERE
-	void selectSome(string* cols, int numCols, int* posRecords, int arrSize)
+	void selectSome(string* cols, int numCols, int* posRecords, int arrSize, ofstream& fout)
 	{
 		//find position of columns
 		int* poz = new int[numCols];
@@ -735,17 +768,21 @@ public:
 		for (int i = 0; i < numCols; i++)
 		{
 			cout << columns[poz[i]].getName() << ' ';
+			fout << columns[poz[i]].getName() << ' ';
 
 		}
 		cout << endl;
+		fout << endl;
 		//write records
 		for (int i = 0; i < arrSize; i++)
 		{
 			for (int j = 0; j < numCols; j++)
 			{
 				cout << regexStatements::removeQuote(records[posRecords[i]][poz[j]]) << " ";
+				fout << regexStatements::removeQuote(records[posRecords[i]][poz[j]]) << " ";
 			}
 			cout << endl;
+			fout << endl;
 		}
 		delete[] poz;
 	}
