@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include<fstream>
 #include "Files.h"
 #include "Regex.h"
 using namespace std;
@@ -287,7 +288,10 @@ public:
 			delete[] this->values;
 		this->values = new string[numValues];
 		for (int i = 0; i < numValues; i++)
+		{
 			this->values[i] = values[i];
+		}
+			
 	}
 	//initialize dynamic array, no values
 	void setValues(int size) {
@@ -366,6 +370,13 @@ public:
 			cout << endl << "Value on column " << i + 1 << " : " << values[i];
 		}
 		cout << endl;
+	}
+	//function for removing apostrophes
+	void removeApostrophes() {
+		for (int i = 0; i < numValues; i++)
+		{
+			values[i] = regexStatements::removeQuote(values[i], "");
+		}
 	}
 
 	void addValue(string s) {
@@ -590,7 +601,6 @@ public:
 	void incrementNumRecords() {
 		this->numRecords++;
 	}
-
 	//a funtion for checking table structure against a record
 	bool checkRecord(Record& r, string& err) {
 		//check size
@@ -617,7 +627,7 @@ public:
 				return false;
 			}
 			if (this->columns[i].getType() == "text" && (!regexStatements::isText(r[i]))) {
-				err = "Value " + r[i] + " expected text";
+				err = "Value " + r[i] + " expected text between apostrophes";
 				return false;
 			}
 		}
@@ -631,6 +641,15 @@ public:
 		this->numRecords = 0;
 		this->columns = nullptr;
 		this->records = nullptr;
+	}
+	//function for rewriting the data file
+	void rewriteData()
+	{
+		BinaryFile file(name + ".data");
+		ofstream fout = file.openToWrite();
+		for (int i = 0; i < numRecords; i++)
+			records[i].writeRecord(fout);
+		fout.close();
 	}
 
 	//constructor that takes info about table from binary files
@@ -660,6 +679,7 @@ public:
 			}
 			fin.close();
 		}
+		
 		//if no data is assigned to the table, then we assign values as such
 		if (!dataFile.exists()) {
 			this->records = nullptr;
