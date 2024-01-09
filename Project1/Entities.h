@@ -4,6 +4,7 @@
 #include<fstream>
 #include "Files.h"
 #include "Regex.h"
+//#include "commandParser.h"
 using namespace std;
 
 //a class which represents a column definition from a table (data is stored using Records)
@@ -288,7 +289,10 @@ public:
 			delete[] this->values;
 		this->values = new string[numValues];
 		for (int i = 0; i < numValues; i++)
+		{
 			this->values[i] = values[i];
+		}
+			
 	}
 	//initialize dynamic array, no values
 	void setValues(int size) {
@@ -367,6 +371,13 @@ public:
 			cout << endl << "Value on column " << i + 1 << " : " << values[i];
 		}
 		cout << endl;
+	}
+	//function for removing apostrophes
+	void removeApostrophes() {
+		for (int i = 0; i < numValues; i++)
+		{
+			values[i] = regexStatements::removeQuote(values[i], "");
+		}
 	}
 
 	void addValue(string s) {
@@ -523,6 +534,104 @@ public:
 		else
 			this->numRecords = numRecords;
 	}
+	//function that returns an array of positions of valid records that respect a WHERE clause
+	//WHERE id = 3
+	int* validRecords(string filterColumn, string filterOperator, string filterValue, int& arrSize) {
+		//check if column type is good, compared to filter value
+		int validColPos = 0;
+		for (int i = 0; i < numColumns; i++) {
+			if (filterColumn == columns[i].getName()) {
+				if (filterValue.length() > columns[i].getDimension()) {
+					throw exception("Filter value too big");
+				}
+				if (columns[i].getType() == "integer" && (!regexStatements::isInteger(filterValue))) {
+					throw exception("Filter expected integer");
+				}
+				if (columns[i].getType() == "float" && (!regexStatements::isFloat(filterValue))) {
+					throw exception("Filter value expected float");
+				}
+				if (columns[i].getType() == "text" && (!regexStatements::isText(filterValue))) {
+					throw exception("Filter value expected text");
+				}
+				validColPos = i;
+				break;
+			}
+		}
+		int* validRecords = nullptr;
+		arrSize = 0;
+		//for integer for text or for float
+
+		for (int i = 0; i < numRecords; i++) {
+			if (columns[validColPos].getType() == "integer") {
+				//transform in integer and check condition
+				//val 1 is every value on column
+				//val 2 is filter value
+				int val1 = regexStatements::toInt(records[i][validColPos]);
+				int val2 = regexStatements::toInt(filterValue);
+				if (regexStatements::condition(val1, val2, filterOperator) )
+					arrSize++;
+			}
+			else if (columns[validColPos].getType() == "float") {
+				//transform in integer and check condition
+				//val 1 is every value on column
+				//val 2 is filter value
+				float val1 = regexStatements::toFloat(records[i][validColPos]);
+				float val2 = regexStatements::toFloat(filterValue);
+				if (regexStatements::condition(val1, val2, filterOperator)) {
+					arrSize++;
+				}
+			}
+			else {
+				//remove apostrophes before checking
+				filterValue = regexStatements::removeQuote(filterValue, "");
+				if (regexStatements::condition(records[i][validColPos], filterValue, filterOperator)) {
+					arrSize++;
+				}
+			}
+		}
+
+		if (arrSize == 0)
+			return nullptr;
+		else {
+			validRecords = new int[arrSize];
+			int k = 0;
+			for (int i = 0; i < numRecords; i++) {
+				if (columns[validColPos].getType() == "integer") {
+					//transform in integer and check condition
+					//val 1 is every value on column
+					//val 2 is filter value
+					int val1 = regexStatements::toInt(records[i][validColPos]);
+					int val2 = regexStatements::toInt(filterValue);
+					if (regexStatements::condition(val1, val2, filterOperator)) {
+						validRecords[k] = i;
+						k++;
+					}
+						
+				}
+				else if (columns[validColPos].getType() == "float") {
+					//transform in integer and check condition
+					//val 1 is every value on column
+					//val 2 is filter value
+					float val1 = regexStatements::toFloat(records[i][validColPos]);
+					float val2 = regexStatements::toFloat(filterValue);
+					if (regexStatements::condition(val1, val2, filterOperator)) {
+						validRecords[k] = i;
+						k++;
+					}
+				}
+				else {
+					if (regexStatements::condition(records[i][validColPos], filterValue, filterOperator)) {
+						validRecords[k] = i;
+						k++;
+					}
+				}
+			}
+		}
+		return validRecords;
+
+	}
+
+
 	// a function for displaying the table
 	void displayTableInfo()
 	{
@@ -555,6 +664,26 @@ public:
 			cout << endl;
 		}
 	}
+	//SELECT ALL WHERE
+	void selectAll(int* posRecords, int arrSize) {
+		//write column names
+		for (int i = 0; i < numColumns; i++)
+		{
+			cout << columns[i].getName() << ' ';
+
+		}
+		cout << endl;
+		//write all records
+		for (int i = 0; i < arrSize; i++)
+		{
+			for (int j = 0; j < numColumns; j++)
+			{
+				cout << regexStatements::removeQuote(records[posRecords[i]][j]) << " ";
+			}
+			cout << endl;
+		}
+	}
+	//select some columns
 	void selectSome(string* cols, int numCols)
 	{
 		//find position of columns
@@ -587,11 +716,43 @@ public:
 		}
 		delete[] poz;
 	}
+	//SELECT some cols WHERE
+	void selectSome(string* cols, int numCols, int* posRecords, int arrSize)
+	{
+		//find position of columns
+		int* poz = new int[numCols];
+		for (int i = 0; i < numCols; i++)
+		{
+			for (int j = 0; j < numColumns; j++)
+			{
+				if (cols[i] == columns[j].getName())
+				{
+					poz[i] = j;
+				}
+			}
+		}
+		//write columns
+		for (int i = 0; i < numCols; i++)
+		{
+			cout << columns[poz[i]].getName() << ' ';
+
+		}
+		cout << endl;
+		//write records
+		for (int i = 0; i < arrSize; i++)
+		{
+			for (int j = 0; j < numCols; j++)
+			{
+				cout << regexStatements::removeQuote(records[posRecords[i]][poz[j]]) << " ";
+			}
+			cout << endl;
+		}
+		delete[] poz;
+	}
 	//function for incrementing number of records
 	void incrementNumRecords() {
 		this->numRecords++;
 	}
-
 	//a funtion for checking table structure against a record
 	bool checkRecord(Record& r, string& err) {
 		//check size
@@ -618,7 +779,7 @@ public:
 				return false;
 			}
 			if (this->columns[i].getType() == "text" && (!regexStatements::isText(r[i]))) {
-				err = "Value " + r[i] + " expected text";
+				err = "Value " + r[i] + " expected text between apostrophes";
 				return false;
 			}
 		}

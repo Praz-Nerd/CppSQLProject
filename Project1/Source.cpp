@@ -68,11 +68,23 @@ int main(int argc, char* argv[]) {
     cout << x << endl;*/
 
     string s;
-    
+    cout << "Supported commands: CREATE/DROP TABLE/INDEX, DISPLAY TABLE, INSERT, SELECT, UPDATE, DELETE" << endl;
+    cout << "*  Command formats: " << endl;
+    cout << "\tCREATE TABLE table_name [IF NOT EXISTS] ((col_name,col_type,col_size,col_default),...)\n\tCREATE INDEX [IF NOT EXISTS] index_name ON table_name (column_name)" << endl;
+    cout << "\tDROP [TABLE|INDEX] entity_name" << endl;
+    cout << "\tDISPLAY TABLE table_name" << endl;
+    cout << "\tINSERT INTO table_name VALUES(...,...,...,...)" << endl;
+    cout << "\tSELECT (...,...) FROM table_name [WHERE] " << endl;
+    cout << "\tUPDATE table_name SET column_name = value WHERE condition" << endl;
+    cout << "\tDELETE FROM table_name WHERE condition" << endl;
+    cout << "\tIMPORT tablename file.csv" << endl;
+    cout << "Tip: All data to be inserted into table has to be written between ' '" << endl;
     while (s != "0")
     {
         cout << "\nCommand (or 0 to exit)> ";
         getline(cin, s);
+        if (s[0]== '0')
+            break;
         Interpreter interpreter(s, ++k);
         interpreter.displayStatement();
         //interpreter.setStatement(s);
