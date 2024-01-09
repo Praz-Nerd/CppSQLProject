@@ -409,7 +409,7 @@ public:
 			if (r.values != nullptr) {
 				this->values = new string[r.numValues];
 				for (int i = 0; i < r.numValues; i++)
-					this->values[i] = r.numValues;
+					this->values[i] = r.values[i];
 			}
 			else
 				this->values = nullptr;
@@ -803,7 +803,23 @@ public:
 			records[i].writeRecord(fout);
 		fout.close();
 	}
+	//function for deleting one record
+	void deleteRecord(int pos)
+	{
+		Record* copy=new Record[numRecords-1];
+		for (int i = 0; i < numRecords-1; i++)
+		{
+			if(i!=pos)
+				copy[i] = records[i];
 
+		}
+		numRecords--;
+		delete[]records;
+		records = new Record[numRecords];
+		for (int i = 0; i < numRecords; i++)
+			records[i] = copy[i];
+		delete[]copy;
+	}
 	//function for checking new set values
 	bool checkValue(string col, string& val)
 	{
