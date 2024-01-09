@@ -580,6 +580,51 @@ public:
         cout << "Table: " << tableName << endl;
         cout << "Filter column: " << filter << endl;
 
+        BinaryFile tableFile(tableName + ".tab");
+        if (!tableFile.exists())
+            throw exception("Table does not exist");
+        else {
+            Table table(tableName);
+            int* validRec = nullptr;
+            int size = 0;
+            string* tableColumns = table.getColumnNames();
+            bool ok = false;
+            for (int i = 0; i < table.getNumColumns(); i++)
+                if (filterColumn == tableColumns[i])
+                    ok = 1;
+
+            if (ok == 0) {
+
+                delete[] tableColumns;
+                throw exception("Filter column does not exist");
+            }
+            else {
+                //check valid records return their position
+                validRec = table.validRecords(filterColumn, filterOperator, filterValue, size);
+                if (size == 0) {
+                    cout << "No records to delete" << endl;
+                    delete[] tableColumns;
+                    delete[]validRec;
+                    return 1;
+                }
+                else
+                {
+                    while (size != 0)
+                    {
+                        table.deleteRecord(validRec[0]);
+                        break;
+                        /*delete[]validRec;
+                        validRec = table.validRecords(filterColumn, filterOperator, filterValue, size);*/
+
+                    }
+                    table.writeToBFile(tableFile);
+                    table.rewriteData();
+                }
+            }
+            delete[] tableColumns;
+            delete[]validRec;
+        }
+
         return 1;
     }
 
