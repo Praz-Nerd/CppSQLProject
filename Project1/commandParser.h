@@ -505,8 +505,54 @@ public:
         cout << "Value: " << value << endl;
         cout << "Condition: " << filter << endl;
 
+        BinaryFile tableFile(tableName + ".tab");
+        if (!tableFile.exists())
+            throw exception("Table does not exist");
+        else {
+            Table table(tableName);
+            int colPosition = 0;
+            int* validRec = nullptr;
+            int size = 0;
+            string* tableColumns = table.getColumnNames();
+            bool ok = false;
+            for (int i = 0; i < table.getNumColumns(); i++)
+                if (columnName == tableColumns[i])
+                {
+                    ok = true;
+                    colPosition = i;
+                }
+            if (ok) {
+                if (table.checkValue(columnName, value))
+                {
+                  ok = false;
+                    for (int i = 0; i < table.getNumColumns(); i++)
+                        if (columnName == tableColumns[i])
+                            ok = 1;
 
+                    if (ok == 0) {
+                        
+                        delete[] tableColumns;
+                        throw exception("Filter column does not exist");
+                    }
+                    else {
+                        //check valid records return their position
+                        validRec = table.validRecords(filterCol, filterOperator, filterValue, size);
+                        if (size == 0) {
+                            cout << "No records to update" << endl;
+                            delete[] tableColumns;
+                            delete[]validRec;
+                            return 1;
+                        }
+                        else {
+                            table.updateTable(value, colPosition, validRec, size);
+                            table.rewriteData();
+                        }
+                    }
+                }
+            }
+            else throw exception("Set column does not exist");
 
+        }
 
 
         return 1;

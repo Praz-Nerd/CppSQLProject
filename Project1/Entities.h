@@ -804,6 +804,39 @@ public:
 		fout.close();
 	}
 
+	//function for checking new set values
+	bool checkValue(string col, string& val)
+	{
+		for (int i = 0; i < numColumns; i++)
+		{
+			if (col == columns[i].getName()) {
+				if (val.length() > columns[i].getDimension()) {
+					throw exception("Set value too big");
+				}
+				if (columns[i].getType() == "integer" && (!regexStatements::isInteger(val))) {
+					throw exception("Set expected integer");
+				}
+				if (columns[i].getType() == "float" && (!regexStatements::isFloat(val))) {
+					throw exception("Set value expected float");
+				}
+				if (columns[i].getType() == "text" && (!regexStatements::isText(val))) {
+					throw exception("Set value expected text");
+				}
+				val = regexStatements::removeQuote(val, "");
+				break;
+			}
+		}
+		return true;
+	}
+
+	//function for updating the table
+	void updateTable(string val, int colPosition,int* recPosition, int size)
+	{
+		for (int i = 0; i < size; i++)
+		{
+			records[i][colPosition] = val;
+		}
+	}
 	//constructor that takes info about table from binary files
 	Table(string name) {
 		this->name = name;
