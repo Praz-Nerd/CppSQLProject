@@ -168,42 +168,21 @@ public:
         return string;*/
         return string;
     }
-    //extract an integer from a string with only numbers
-    static int toInt(string& s) {
-        int x = 0;
-        bool isNegative = false;
+    
 
-        for (int i = 0; i < s.length(); i++) {
-            if (i == 0 && s[i] == '-')
-                isNegative = true;
-            else
-                x = x * 10 + (s[i] - '0');
-        }
+    //function that extracts WHERE clause elements
+    void whereDecoder(string filter, string& filterColumn, string& filterOperator, string& filterValue) {
+        filterColumn = extractString(filter, 0, filter.find_first_of("<>=! "));
+        //extract and check operator
+        filterOperator = extractString(filter, filter.find_first_of("<>=!"), filter.find_last_of("<>=!")+1);
+        if (filterOperator != "<" && filterOperator != ">" && filterOperator != "=" && filterOperator != "!=" && filterOperator != "<=" && filterOperator != ">=")
+            throw exception("Invalid operator in the WHERE clause");
 
-        if (isNegative)
-            x = x * (-1);
-
-        return x;
-    }
-    //-1034.032
-    static float toFloat(string& s) {
-        //extract integer part and assign to an integer variable
-        string integerPart = extractString(s, 0, s.find_first_of('.')-1);
-        cout << integerPart << endl;
-        int n = toInt(integerPart);
-        cout << n << endl;
-        float mantissa = 0;
-        int p = 1;
-        for (int i = s.find_first_of('.') + 1; i < s.length(); i++) {
-            p = p * 10;
-            mantissa = mantissa + (float)(s[i] - '0') / p;
-        }
-        cout << mantissa << endl;
-            //check positive or negative
-        if (n > 0)
-            return (float)n + mantissa;
-        else
-            return (float)n - mantissa;
+        //extract and format value
+        filterValue = extractString(filter, filter.find_last_of("<>=!") + 1, filter.length());
+        filterValue = regexStatements::trimString(filterValue);
+        //filterValue = regexStatements::removeQuote(filterValue, "");
+        cout << filterColumn << " " << filterOperator << " " << filterValue << endl;
     }
 
     //functions for individually parsing a command
@@ -257,7 +236,7 @@ public:
     {
         string params;
         bool hasFilter = false;
-        
+        string filterColumn, filterOperator, filterValue;
        /* string filter = extractString(this->getCommand(), this->getCommand().find("WHERE") + WHERE_SIZE + 1, this->getCommand().length());*/
         //extracting column names to be selected (or all)
         if (this->getCommand().find("ALL") != string::npos)
@@ -313,9 +292,11 @@ public:
             cout << "Columns: " << countChars(params, ',') + 1 << endl;
         cout << "Columns: " << params << endl;
         cout << "Filter: " << hasFilter << endl;
-        if (hasFilter)
+        if (hasFilter) {
             cout << "Filter column: " << filter << endl;
-
+            whereDecoder(filter, filterColumn, filterOperator, filterValue);
+        }
+            
         //string* values = extractParameters(params, 0, params.length());
 
         //if (!values) {
@@ -330,26 +311,63 @@ public:
         //checking if the table exists
         if (tableFile.exists()) {
             Table usedTable(tableName);
+            //extracting column names
+            string* columns = extractParameters(params, 0, params.length());
+            string* tableColumns = usedTable.getColumnNames();
+            int noColumns = countChars(params, ',') + 1;
+            //positions if Where clause valid records
+            int* validRec = nullptr;
+            int size = 0;
+            //checking filter column
+            if (hasFilter) {
+                bool ok = 0;
+                for (int i = 0; i < usedTable.getNumColumns(); i++)
+                    if (filterColumn == tableColumns[i])
+                        ok = 1;
+
+                if (ok == 0) {
+                    delete[] columns;
+                    delete[] tableColumns;
+                    throw exception("Filter column does not exist");
+                }
+                else {
+                    //check valid records return their position
+                    validRec = usedTable.validRecords(filterColumn, filterOperator, filterValue, size);
+                    if (size == 0) {
+                        cout << "No records to show" << endl;
+                        delete[] columns;
+                        delete[] tableColumns;
+                        delete[]validRec;
+                        return 1;
+                    }
+                }
+
+            }
             //displaying for the "all" case
             if (params == "all")
             {
-                usedTable.selectAll();
+                if (!hasFilter) {
+                    //no WHERE clause
+                    usedTable.selectAll();
+                }
+                else {
+                    //with WHERE clause
+                    usedTable.selectAll(validRec, size);
+                }
+               
             }
             else
             {
-                //extracting column names
-                string* columns = extractParameters(params, 0, params.length());
-                string* tableColumns = usedTable.getColumnNames();
-                int noColumns = countChars(params, ',')+1;
+                
                 bool ok = 0;
                 for (int i = 0; i < noColumns; i++)
                 {
                     ok = 0;
                     for(int j=0; j< usedTable.getNumColumns(); j++)
-                        if (columns[i] == tableColumns[j])
-                        {
-                            ok = 1;
-                        }
+                    if (columns[i] == tableColumns[j])
+                    {
+                        ok = 1;
+                    }
                     if (ok == 0)
                     {
                         delete[] columns;
@@ -359,42 +377,30 @@ public:
                     }
                 }
                 //all columns exist, proceed to print them
-                usedTable.selectSome(columns,noColumns);
-                delete[] columns;
-                delete[] tableColumns;
+                if (!hasFilter) {
+                    usedTable.selectSome(columns, noColumns);
+                }
+                else
+                    usedTable.selectSome(columns, noColumns, validRec, size);
+
+               
+               
             }
-            
+            //deallocate memory
+            delete[] columns;
+            delete[] tableColumns;
+            delete[] validRec;
         }
         else {
             err = "Table does not exist";
             return 0;
         }
-
+      
         return 1;
     }
 
-    //checking if the table exists and its structure
-    bool checkTable(string& err)
-    {
-        string tableName;
-        executeCommands execute;
-        if (!execute.existTables(tableName))
-        {
-            cout << "The table doesn't exist " << tableName<<'\n';
-            return 0; 
-        }
-        //check the table structure
-        if (!execute.correctStructure(tableName,tableName))
-        {
-            cout << "The table doesn't have a correct structure " << tableName <<'\n';
-            return 0;
-        }
-        return 1;
-    }
     int insertParser(string& err) {
-        //checking if the table exists already and its structure
-        //if (!checkTable(err))return 0; ???
-
+       
         //length of the parameters substring from an insert command
         int length = this->getCommand().find_last_of(')') - this->getCommand().find_first_of('(') - 1;
         //the substring between the to paranthesies from an insert statement
@@ -458,30 +464,39 @@ public:
     }
 
     int updateParser(string & err) {
-            //checking if the table exists already and its structure
-            if (!checkTable(err))return 0;
+            
         //extracting table name, the SET clause and the WHERE caluse
         string tableName = extractString(this->getCommand(), this->getCommand().find("UPDATE") + UPDATE_SIZE + 1, this->getCommand().find("SET") - 1);
         string setValue = extractString(this->getCommand(), this->getCommand().find("SET") +SET_SIZE+ 1, this->getCommand().find("WHERE") - 1);
         string filter = extractString(this->getCommand(), this->getCommand().find("WHERE") + WHERE_SIZE + 1, this->getCommand().length());
+        // set clause variables
         string columnName, value;
+        //where clause variables
+        string filterCol, filterOperator, filterValue;
 
         //checks for good SET clause
-        if (countChars(setValue, ' ') > 2 || countChars(setValue, ',')) {
+        if (countChars(setValue, ',')) {
             err = "Invalid SET clause";
             return 0;
         }
         else {
             //get column and value that get set
-            regexStatements::removeSpaces(setValue, "");
+            //regexStatements::removeSpaces(setValue, "");
             columnName = extractString(setValue, 0, setValue.find('='));
+            regexStatements::removeSpaces(columnName, "");
             value = extractString(setValue, setValue.find('=') + 1, setValue.length());
+            value = regexStatements::trimString(value);
+            //format value
         }
 
         //checks for good WHERE clause
-        if (countChars(filter, ' ') > 2 || countChars(filter, ',')) {
+        if (countChars(filter, ',')) {
             err = "Invalid WHERE clause";
             return 0;
+        }
+        else {
+            //extract column and values
+            whereDecoder(filter, filterCol, filterOperator, filterValue);
         }
 
         //prints to screen
@@ -489,24 +504,31 @@ public:
         cout << "Column to change: " << columnName << endl;
         cout << "Value: " << value << endl;
         cout << "Condition: " << filter << endl;
+
+
+
+
+
         return 1;
     }
 
     int deleteParser(string& err) {
-        //checking if the table exists already and its structure
-        if (!checkTable(err))return 0;
+      
         //extract table name
         string tableName = extractString(this->getCommand(), this->getCommand().find("FROM")+ FROM_SIZE + 1, this->getCommand().find("WHERE") - 1);
 
         int filterLocation;
         string filter = "";
-        
+        string filterColumn, filterOperator, filterValue;
         //filter check
         filterLocation = this->getCommand().find("WHERE") + WHERE_SIZE;
         filter = extractString(this->getCommand(), filterLocation + 1, this->getCommand().length());
-        if (countChars(filter, ' ') > 2 || countChars(filter, ',')) {
+        if (countChars(filter, ',')) {
             err = "Invalid filter";
             return 0;
+        }
+        else {
+            whereDecoder(filter, filterColumn, filterOperator, filterValue);
         }
         //display to screen
         cout << "Table: " << tableName << endl;
@@ -623,7 +645,7 @@ public:
             cout << "Size: " << values[i+2] << endl;
             cout << "Default values: " << values[i+3] << endl;
             //as we only read strings, we need toInt to make the length string into a number
-            Column c(values[i], values[i + 1], toInt(values[i+2]), values[i + 3]);
+            Column c(values[i], values[i + 1], regexStatements::toInt(values[i+2]), values[i + 3]);
             columnArray[k - 1] = c;
             k++;
         }
@@ -715,6 +737,8 @@ public:
                     }
                     Record r(values, table.getNumColumns());
                     delete[] values;
+                    //format data for writing to file
+                    r.removeApostrophes();
                     table.incrementNumRecords();
                     //if exists, append to file, else create file
                     if (!dataFile.exists()) {

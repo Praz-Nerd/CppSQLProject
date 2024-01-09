@@ -81,4 +81,105 @@ public:
     static string removeQuote(string s, string replacement = " ") {
         return regex_replace(s, regex("'"), replacement);
     }
+
+    //functions for checking conditions
+    static bool condition(int val1, int val2, string op)
+    {
+        if (op == "<")
+            return val1 < val2;
+
+        if (op == "<=")
+            return val1 <= val2;
+
+        if (op == ">")
+            return val1 > val2;
+
+        if (op == ">=")
+            return val1 >= val2;
+
+        if (op == "!=")
+            return val1 != val2;
+
+        if (op == "=")
+            return val1 == val2;
+    }
+
+    static bool condition(float val1, float val2, string op)
+    {
+        if (op == "<")
+            return val1 < val2;
+
+        if (op == "<=")
+            return val1 <= val2;
+
+        if (op == ">")
+            return val1 > val2;
+
+        if (op == ">=")
+            return val1 >= val2;
+
+        if (op == "!=")
+            return val1 != val2;
+
+        if (op == "=")
+            return val1 == val2;
+    }
+    static bool condition(string val1, string val2, string op)
+    {
+        if (op == "<")
+            return val1 < val2;
+
+        if (op == "<=")
+            return val1 <= val2;
+
+        if (op == ">")
+            return val1 > val2;
+
+        if (op == ">=")
+            return val1 >= val2;
+
+        if (op == "!=")
+            return val1 != val2;
+
+        if (op == "=")
+            return val1 == val2;
+    }
+
+    //extract an integer from a string with only numbers
+    static int toInt(string& s) {
+        int x = 0;
+        bool isNegative = false;
+
+        for (int i = 0; i < s.length(); i++) {
+            if (i == 0 && s[i] == '-')
+                isNegative = true;
+            else
+                x = x * 10 + (s[i] - '0');
+        }
+
+        if (isNegative)
+            x = x * (-1);
+
+        return x;
+    }
+    //-1034.032
+    static float toFloat(string& s) {
+        //extract integer part and assign to an integer variable
+        string integerPart = s.substr(0, s.find_first_of('.'));
+        int n = toInt(integerPart);
+        cout << n << endl;
+        float mantissa = 0;
+        int p = 1;
+        for (int i = s.find_first_of('.') + 1; i < s.length(); i++) {
+            p = p * 10;
+            mantissa = mantissa + (float)(s[i] - '0') / p;
+        }
+        //check positive or negative
+        if (n > 0)
+            return (float)n + mantissa;
+        else
+            return (float)n - mantissa;
+    }
+
+
 };

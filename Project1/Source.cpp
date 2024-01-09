@@ -62,15 +62,16 @@ int main(int argc, char* argv[]) {
     }
 
     //bere de la altex
-   /* cout << "TESTING TO FLOAT!!!!!!!!!" << endl;
+    /*cout << "TESTING TO FLOAT!!!!!!!!!" << endl;
     string altex = "-2024.85";
-    float x = commandParser::toFloat(altex);
+    float x = regexStatements::toFloat(altex);
     cout << x << endl;*/
 
     string s;
     
     while (s != "0")
     {
+        //read statement from console
         cout << "\nCommand (or 0 to exit)> ";
         getline(cin, s);
         Interpreter interpreter(s, ++k);
