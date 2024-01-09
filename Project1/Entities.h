@@ -806,7 +806,7 @@ public:
 	//function for deleting one record
 	void deleteRecord(int pos)
 	{
-		Record* copy=new Record[numRecords-1];
+		/*Record* copy=new Record[numRecords-1];
 		for (int i = 0; i < numRecords-1; i++)
 		{
 			if(i!=pos)
@@ -818,7 +818,11 @@ public:
 		records = new Record[numRecords];
 		for (int i = 0; i < numRecords; i++)
 			records[i] = copy[i];
-		delete[]copy;
+		delete[]copy;*/
+		for (int i = pos; i < numRecords - 1; i++) {
+			records[i] = records[i + 1];
+		}
+		numRecords--;
 	}
 	//function for checking new set values
 	bool checkValue(string col, string& val)

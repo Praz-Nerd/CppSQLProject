@@ -25,7 +25,8 @@ class commandParser {
 public:
     void setCommand(string& s) {
         if (!s.empty()) {
-           this->command = new string(s);
+            s = regexStatements::trimString(s);
+            this->command = new string(s);
         }
         else {
             throw exception("Command does not exist");
@@ -609,14 +610,14 @@ public:
                 }
                 else
                 {
+                    //deletes first record at position 0, then reassigns position array with new positions and continues until no more
                     while (size != 0)
                     {
                         table.deleteRecord(validRec[0]);
-                        break;
-                        /*delete[]validRec;
-                        validRec = table.validRecords(filterColumn, filterOperator, filterValue, size);*/
-
+                        delete[]validRec;
+                        validRec = table.validRecords(filterColumn, filterOperator, filterValue, size);
                     }
+                    //rerwite table structure and data
                     table.writeToBFile(tableFile);
                     table.rewriteData();
                 }
@@ -790,10 +791,10 @@ public:
 
                 //find number of records in the file
                 float numRecords = (float)k / table.getNumColumns();
-                cout << "Number of records in file is " << numRecords  << endl;
+                cout << "Number of records in file is " << (int)numRecords  << endl;
 
                 if (numRecords != (int)numRecords) {
-                    err = "Invalid number of values in file";
+                    err = "Invalid number of values in file or invalid separator (expected comma)";
                     return 0;
                 }
 
